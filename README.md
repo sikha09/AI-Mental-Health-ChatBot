@@ -1,16 +1,127 @@
-# React + Vite
+# AI-Mental Health ChatBot
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive web application for AI-powered mental health chat support.
 
-Currently, two official plugins are available:
+## 📁 Project Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```
+src/
+├── assets/          # Static assets (images, icons, etc.)
+├── components/      # Reusable React components
+│   ├── Navbar.jsx
+│   ├── Footer.jsx
+│   └── SignInPopup.jsx
+├── config/          # Configuration files
+│   ├── routes.js    # Route definitions
+│   └── constants.js # Application constants
+├── context/         # React Context providers
+│   └── AuthContext.jsx
+├── hooks/           # Custom React hooks
+│   └── useAuth.js
+├── pages/           # Page components
+│   ├── Chat.jsx
+│   └── SignIn.jsx
+├── services/        # API and business logic
+│   ├── authService.js
+│   └── chatService.js
+├── styles/          # CSS stylesheets
+│   ├── index.css    # Global styles
+│   ├── App.css
+│   ├── Navbar.css
+│   ├── Footer.css
+│   ├── SignInPopup.css
+│   ├── Chat.css
+│   └── Signup.css
+├── utils/           # Utility functions
+│   ├── storage.js
+│   └── validation.js
+├── App.jsx          # Main application component
+└── index.js         # Application entry point
+```
 
-## React Compiler
+## 🚀 Getting Started
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+### Prerequisites
 
-## Expanding the ESLint configuration
+- Node.js (v16 or higher)
+- npm or yarn
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+4. Open your browser and navigate to `http://localhost:5173`
+
+## 📦 Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## 🏗️ Architecture
+
+### Components
+- **Navbar**: Main navigation bar component
+- **Footer**: Application footer with links
+- **SignInPopup**: Modal popup for user authentication
+
+### Pages
+- **App**: Home page with hero section, FAQ, and features
+- **SignIn**: User registration/signup page
+- **Chat**: Chat interface for AI conversations
+
+### Services
+- **authService**: Handles authentication logic
+- **chatService**: Manages chat API calls
+
+### Context
+- **AuthContext**: Provides authentication state across the app
+
+### Hooks
+- **useAuth**: Custom hook for authentication state management
+
+### Utils
+- **storage**: Local storage helper functions
+- **validation**: Form validation utilities
+
+## 🔧 Configuration
+
+### Routes
+All routes are defined in `src/config/routes.js`
+
+### Constants
+Application constants are in `src/config/constants.js`
+
+## 📝 Features
+
+- ✅ User authentication (Sign In/Sign Up)
+- ✅ AI Chat interface
+- ✅ Responsive design
+- ✅ Modern UI with blur effects
+- ✅ FAQ section
+- ✅ Social login support (Google, Facebook)
+
+## 🛠️ Technologies Used
+
+- React 19
+- React Router DOM
+- Vite
+- CSS3
+
+## 📄 License
+
+This project is private and proprietary.
+
+## 👥 Contributors
+
+- Development Team

@@ -1,0 +1,274 @@
+/* App Component Styles */
+.app {
+  min-height: 100vh;
+  background:  linear-gradient(135deg, #06328b 0%, #495c9d 100%);
+  color: white;
+  transition: filter 0.3s ease;
+}
+
+.app.blurred {
+  filter: blur(5px);
+}
+
+/* Hero Section */
+.hero {
+  text-align: center;
+  padding: 12rem 2rem 4rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  letter-spacing: -1px;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+  opacity: 0.95;
+}
+
+.cta-button {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background-color: #e5e7eb;
+}
+
+.cta-button:active {
+  transform: translateY(0);
+}
+
+/* Meet Section */
+.meet-section {
+  text-align: center;
+  padding: 10rem 2rem 4rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.meet-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.meet-description {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  opacity: 0.95;
+}
+
+/* FAQ Section */
+.faq-section {
+  text-align: center;
+  padding: 8rem 2rem 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.faq-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+  color: white;
+}
+
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.faq-card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: left;
+  backdrop-filter: blur(10px);
+}
+
+.faq-question {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.faq-answer {
+  font-size: 1rem;
+  color: white;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.help-btn {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.help-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+}
+
+/* Join Section */
+.join-section {
+  padding: 8rem 2rem 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.join-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+}
+
+.join-text {
+  flex: 1;
+  text-align: left;
+}
+
+.join-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+.join-description {
+  font-size: 1.25rem;
+  color: white;
+  opacity: 0.95;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.characters {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.character {
+  font-size: 8rem;
+  line-height: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero {
+    padding: 4rem 1.5rem 2rem;
+  }
+
+  .faq-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .faq-title {
+    font-size: 2rem;
+  }
+
+  .join-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .join-text {
+    text-align: center;
+  }
+
+  .join-title {
+    font-size: 2rem;
+  }
+
+  .characters {
+    justify-content: center;
+  }
+
+  .character {
+    font-size: 5rem;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .cta-button {
+    padding: 0.9rem 2rem;
+    font-size: 1rem;
+  }
+
+  .meet-section {
+    padding: 6rem 1.5rem 3rem;
+  }
+
+  .meet-title {
+    font-size: 2rem;
+  }
+
+  .meet-description {
+    font-size: 1rem;
+  }
+
+  .meet-description br {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .faq-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .join-title {
+    font-size: 1.5rem;
+  }
+
+  .character {
+    font-size: 4rem;
+  }
+}

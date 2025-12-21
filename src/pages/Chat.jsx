@@ -1,4 +1,5 @@
 import { useState } from "react";
+import '../styles/Chat.css';
 
 const Chat = ({ setIsLoggedIn }) => {
   const [messages, setMessages] = useState([]);
@@ -22,7 +23,7 @@ const Chat = ({ setIsLoggedIn }) => {
     <div className="chat-container">
       <div className="header">
         <h2>Chatbot</h2>
-        <button className="logout-btn" onClick={() => setIsLoggedIn(false)}>
+        <button className="logout-btn" onClick={() => setIsLoggedIn && setIsLoggedIn(false)}>
           Logout
         </button>
       </div>
@@ -40,6 +41,7 @@ const Chat = ({ setIsLoggedIn }) => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type your message..."
+          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
         />
         <button onClick={sendMessage}>Send</button>
       </div>
@@ -48,3 +50,4 @@ const Chat = ({ setIsLoggedIn }) => {
 };
 
 export default Chat;
+

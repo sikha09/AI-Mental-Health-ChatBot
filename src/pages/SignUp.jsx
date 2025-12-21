@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './assets/Singup.css';
+import '../styles/Signup.css';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -99,7 +99,7 @@ const Signup = () => {
           <h1 className="title">Welcome to Sign Up <span className="highlight">Buddy!</span></h1>
 
           <form onSubmit={handleSubmit}>
-            <div className="input-group">
+            {/* <div className="input-group">
               <span className="input-icon">👤</span>
               <input
                 type="text"
@@ -109,7 +109,7 @@ const Signup = () => {
                 onChange={handleChange}
                 required
               />
-            </div>
+            </div> */}
 
             <div className="input-group">
               <span className="input-icon">✉️</span>
@@ -188,3 +188,4 @@ const Signup = () => {
 };
 
 export default Signup;
+
