@@ -1,191 +1,101 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
-import '../styles/Signup.css';
+import "../styles/SignUp.css";
 
-const Signup = () => {
+const SignUp = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    agreeToTerms: false
+    name: "",
+    email: "",
+    password: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Signup submitted:', formData);
-    // Handle signup logic here
-    // After successful signup, navigate to chat
+    console.log("Sign Up with:", formData);
+    // Handle sign up logic here
     navigate('/chat');
   };
 
-  const signupWithGoogle = () => {
-    console.log('Google signup clicked');
-    window.location.href = '/auth/google';
-  };
-
-  const signupWithFacebook = () => {
-    console.log('Facebook signup clicked');
-    window.location.href = '/auth/facebook';
+  const signUpWithGoogle = () => {
+    console.log("Google sign up clicked");
+    window.location.href = "/auth/google";
   };
 
   return (
-    <div className="login-container">
-      <div className="left-section">
-        <div className="robot-illustration">
-          <div className="decorative-circles">
-            <div className="circle circle-1"></div>
-            <div className="circle circle-2"></div>
-            <div className="circle circle-3"></div>
-          </div>
-          <div className="robot">
-            <div className="robot-head">
-              <div className="robot-screen">
-                <div className="robot-eyes">
-                  <div className="eye eye-left"></div>
-                  <div className="eye eye-right"></div>
-                </div>
-              </div>
-              <div className="robot-antenna left-antenna"></div>
-              <div className="robot-antenna right-antenna"></div>
-            </div>
-            <div className="robot-body">
-              <div className="robot-core"></div>
-            </div>
-            <div className="robot-arm left-arm"></div>
-            <div className="robot-arm right-arm"></div>
-            <div className="robot-leg left-leg"></div>
-            <div className="robot-leg right-leg"></div>
-          </div>
-          <div className="chat-bubble user-bubble">
-            <p>Hello, Can you help me?</p>
-          </div>
-          <div className="chat-bubble robot-bubble">
-            <div className="bubble-header">
-              <span>Buddy!</span>
-              <div className="bubble-icons">
-                <span className="icon">📋</span>
-                <span className="icon">👍</span>
-              </div>
-            </div>
-            <p>Sure, Buddy is ready to help you</p>
-          </div>
-        </div>
+    <>
+      {/* Background (blurred) */}
+      <div className="signup-background blurred">
+        <h1>AI Mental Health Chatbot</h1>
+        <p>Talk freely. Feel supported. Anytime.</p>
+        <button>Get Started</button>
       </div>
 
-      <div className="right-section">
-        <div className="form-container">
-          <div className="logo-icon">
-            <div className="robot-logo">
-              <div className="logo-face">
-                <div className="logo-eyes">
-                  <div className="logo-eye"></div>
-                  <div className="logo-eye"></div>
-                </div>
-                <div className="logo-smile"></div>
-              </div>
-            </div>
-          </div>
+      {/* Popup Overlay */}
+      <div className="signup-popup-overlay">
+        <div className="signup-popup" onClick={(e) => e.stopPropagation()}>
+          <h2>Sign Up to Chatbot</h2>
+          <p className="subtitle">
+            Start chatting with your AI companion
+          </p>
 
-          <h1 className="title">Welcome to Sign Up <span className="highlight">Buddy!</span></h1>
+          <button onClick={signUpWithGoogle} className="google-btn">
+            Sign Up with Google
+          </button>
 
-          <form onSubmit={handleSubmit}>
-            {/* <div className="input-group">
-              <span className="input-icon">👤</span>
-              <input
-                type="text"
-                name="name"
-                placeholder="Enter your name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-            </div> */}
+          <div className="divider">or</div>
 
-            <div className="input-group">
-              <span className="input-icon">✉️</span>
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="signup-form">
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="signup-input"
+            />
 
-            <div className="input-group">
-              <span className="input-icon">🔒</span>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-              <button
-                type="button"
-                className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
-              </button>
-            </div>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="signup-input"
+            />
 
-            <div className="checkbox-group">
-              <input
-                type="checkbox"
-                id="terms"
-                name="agreeToTerms"
-                checked={formData.agreeToTerms}
-                onChange={handleChange}
-              />
-              <label htmlFor="terms">
-                I agree to <a href="#terms">Terms of Conditions</a> and <a href="#privacy">Privacy of Policy</a>
-              </label>
-            </div>
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              className="signup-input"
+            />
 
-            <button type="submit" className="signup-btn">Sign Up</button>
-
-            <p className="signin-text">
-              Already have an account? <Link to="/" className="signin-link">Sign In</Link>
-            </p>
-
-            <div className="divider">
-              <span>Or continue with</span>
-            </div>
-
-            <div className="social-buttons">
-              <button type="button" className="social-btn google-btn" onClick={signupWithGoogle}>
-                <span className="social-icon">G</span>
-                Google
-              </button>
-              <button type="button" className="social-btn facebook-btn" onClick={signupWithFacebook}>
-                <span className="social-icon">f</span>
-                Facebook
-              </button>
-            </div>
-
-            <div className="footer-links">
-              <Link to="/terms">Terms of Service</Link>
-              <Link to="/privacy">Privacy Policy</Link>
-            </div>
+            <button type="submit" className="signup-btn">
+              Sign Up
+            </button>
           </form>
+
+          <p className="signin-text">
+            Already have an account?{' '}
+            <Link to="/" className="signin-link">
+              Sign In
+            </Link>
+          </p>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
-export default Signup;
+export default SignUp;
 

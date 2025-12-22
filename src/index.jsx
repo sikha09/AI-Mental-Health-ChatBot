@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import App from './App';
-import Signup from './pages/SignIn';
+import Signup from './pages/SignUp';
 import Chat from './pages/Chat';
 import ROUTES from './config/routes';
 import './styles/index.css';
