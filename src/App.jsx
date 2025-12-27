@@ -58,7 +58,7 @@ function App() {
           <h3 className="meet-title">Meet YourChatBot</h3>
           <p className="meet-description">
             An AI companion who is eager to learn and would love to see the world through<br />
-            your eyes. Replika is always ready to chat when you need an empathetic friend.
+            your eyes. Your ChatBot is always ready to chat when you need an empathetic friend.
           </p>
         </section>
 
