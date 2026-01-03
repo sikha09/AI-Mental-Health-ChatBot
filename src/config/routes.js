@@ -11,6 +11,7 @@ export const ROUTES = {
   CHAT: '/chat',
   TERMS: '/terms',
   PRIVACY: '/privacy',
+  OAUTH_CALLBACK: '/auth/callback',
 };
 
 export default ROUTES;

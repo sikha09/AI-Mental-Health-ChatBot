@@ -4,18 +4,17 @@
  * Handles all authentication-related API calls and logic.
  */
 
-import { API_ENDPOINTS, STORAGE_KEYS } from '../config/constants';
+import { API_ENDPOINTS, STORAGE_KEYS, API_BASE_URL } from '../config/constants';
 import { setStorage, getStorage, removeStorage } from '../utils/storage';
 
 /**
- * Sign in user
+ * Sign in user with email and password
  * @param {string} email - User email
  * @param {string} password - User password
  * @returns {Promise<object>} User data and token
  */
 export const signIn = async (email, password) => {
   try {
-    // TODO: Replace with actual API call
     const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
       method: 'POST',
       headers: {
@@ -24,13 +23,17 @@ export const signIn = async (email, password) => {
       body: JSON.stringify({ email, password }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      throw new Error('Sign in failed');
+      throw new Error(data.message || 'Sign in failed');
     }
 
-    const data = await response.json();
-    setStorage(STORAGE_KEYS.AUTH_TOKEN, data.token);
-    setStorage(STORAGE_KEYS.USER_DATA, data.user);
+    if (data.success && data.token) {
+      setStorage(STORAGE_KEYS.AUTH_TOKEN, data.token);
+      setStorage(STORAGE_KEYS.USER_DATA, data.user);
+    }
+
     return data;
   } catch (error) {
     console.error('Sign in error:', error);
@@ -39,13 +42,12 @@ export const signIn = async (email, password) => {
 };
 
 /**
- * Sign up user
- * @param {object} userData - User registration data
+ * Sign up user with email and password
+ * @param {object} userData - User registration data (email, password, name)
  * @returns {Promise<object>} User data and token
  */
 export const signUp = async (userData) => {
   try {
-    // TODO: Replace with actual API call
     const response = await fetch(API_ENDPOINTS.AUTH.SIGNUP, {
       method: 'POST',
       headers: {
@@ -54,13 +56,17 @@ export const signUp = async (userData) => {
       body: JSON.stringify(userData),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      throw new Error('Sign up failed');
+      throw new Error(data.message || 'Sign up failed');
     }
 
-    const data = await response.json();
-    setStorage(STORAGE_KEYS.AUTH_TOKEN, data.token);
-    setStorage(STORAGE_KEYS.USER_DATA, data.user);
+    if (data.success && data.token) {
+      setStorage(STORAGE_KEYS.AUTH_TOKEN, data.token);
+      setStorage(STORAGE_KEYS.USER_DATA, data.user);
+    }
+
     return data;
   } catch (error) {
     console.error('Sign up error:', error);
@@ -69,11 +75,87 @@ export const signUp = async (userData) => {
 };
 
 /**
+ * Sign in with Google OAuth
+ * Redirects to Google OAuth page
+ */
+export const signInWithGoogle = () => {
+  window.location.href = API_ENDPOINTS.AUTH.GOOGLE;
+};
+
+/**
+ * Sign in with Facebook OAuth
+ * Redirects to Facebook OAuth page
+ */
+export const signInWithFacebook = () => {
+  window.location.href = API_ENDPOINTS.AUTH.FACEBOOK;
+};
+
+/**
+ * Handle OAuth callback
+ * Called when user returns from OAuth provider
+ * @param {string} token - JWT token from OAuth callback
+ * @returns {Promise<object>} User data
+ */
+export const handleOAuthCallback = async (token) => {
+  try {
+    if (!token) {
+      throw new Error('No token provided');
+    }
+
+    // Store the token
+    setStorage(STORAGE_KEYS.AUTH_TOKEN, token);
+
+    // Fetch user profile with the token
+    const response = await fetch(API_ENDPOINTS.AUTH.PROFILE, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to get user profile');
+    }
+
+    if (data.success && data.user) {
+      setStorage(STORAGE_KEYS.USER_DATA, data.user);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('OAuth callback error:', error);
+    // Clear invalid token
+    removeStorage(STORAGE_KEYS.AUTH_TOKEN);
+    removeStorage(STORAGE_KEYS.USER_DATA);
+    throw error;
+  }
+};
+
+/**
  * Sign out user
  */
-export const signOut = () => {
-  removeStorage(STORAGE_KEYS.AUTH_TOKEN);
-  removeStorage(STORAGE_KEYS.USER_DATA);
+export const signOut = async () => {
+  try {
+    const token = getStorage(STORAGE_KEYS.AUTH_TOKEN);
+
+    if (token) {
+      // Call logout endpoint
+      await fetch(API_ENDPOINTS.AUTH.LOGOUT, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+    }
+  } catch (error) {
+    console.error('Logout error:', error);
+  } finally {
+    // Always clear local storage
+    removeStorage(STORAGE_KEYS.AUTH_TOKEN);
+    removeStorage(STORAGE_KEYS.USER_DATA);
+  }
 };
 
 /**
@@ -90,5 +172,13 @@ export const getCurrentUser = () => {
  */
 export const isAuthenticated = () => {
   return !!getStorage(STORAGE_KEYS.AUTH_TOKEN);
+};
+
+/**
+ * Get auth token
+ * @returns {string|null} Auth token
+ */
+export const getAuthToken = () => {
+  return getStorage(STORAGE_KEYS.AUTH_TOKEN);
 };
 

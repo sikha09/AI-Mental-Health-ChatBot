@@ -6,4 +6,5 @@
 
 export { default as Chat } from './Chat';
 export { default as SignIn } from './SignUp';
+export { default as OAuthCallback } from './OAuthCallback';
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import SignInPopup from './components/SignInPopup';
+import { signInWithGoogle, signInWithFacebook } from './services/authService';
 import './styles/App.css';
 
 /**
@@ -31,9 +32,12 @@ function App() {
     }));
   };
 
-  const signInWithGoogle = () => {
-    console.log("Google sign in clicked");
-    window.location.href = "/auth/google";
+  const handleGoogleSignIn = () => {
+    signInWithGoogle();
+  };
+
+  const handleFacebookSignIn = () => {
+    signInWithFacebook();
   };
 
   return (
@@ -118,7 +122,8 @@ function App() {
         formData={formData}
         handleChange={handleChange}
         handleSubmit={handleSignIn}
-        signInWithGoogle={signInWithGoogle}
+        signInWithGoogle={handleGoogleSignIn}
+        signInWithFacebook={handleFacebookSignIn}
       />
     </>
   );

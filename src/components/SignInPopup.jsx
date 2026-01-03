@@ -12,14 +12,16 @@ import '../styles/SignInPopup.css';
  * @param {Function} handleChange - Form input change handler
  * @param {Function} handleSubmit - Form submit handler
  * @param {Function} signInWithGoogle - Google sign in handler
+ * @param {Function} signInWithFacebook - Facebook sign in handler
  */
-const SignInPopup = ({ 
-  isOpen, 
-  onClose, 
-  formData, 
-  handleChange, 
-  handleSubmit, 
-  signInWithGoogle 
+const SignInPopup = ({
+  isOpen,
+  onClose,
+  formData,
+  handleChange,
+  handleSubmit,
+  signInWithGoogle,
+  signInWithFacebook
 }) => {
   if (!isOpen) return null;
 
@@ -51,8 +53,14 @@ const SignInPopup = ({
             Sign In
           </button>
         </form>
+        <div className="oauth-divider">
+          <span>OR</span>
+        </div>
         <button onClick={signInWithGoogle} className="google-btn">
-          Sign In with Google
+          🔍 Sign In with Google
+        </button>
+        <button onClick={signInWithFacebook} className="facebook-btn">
+          📘 Sign In with Facebook
         </button>
         <p className="signup-text">
           Don't have an account?{' '}

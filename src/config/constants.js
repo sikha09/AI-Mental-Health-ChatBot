@@ -6,16 +6,20 @@
 
 export const APP_NAME = 'AI-Mental Health ChatBot';
 
+export const API_BASE_URL = 'http://localhost:5000';
+
 export const API_ENDPOINTS = {
   AUTH: {
-    GOOGLE: '/auth/google',
-    FACEBOOK: '/auth/facebook',
-    LOGIN: '/api/auth/login',
-    SIGNUP: '/api/auth/signup',
+    GOOGLE: `${API_BASE_URL}/auth/google`,
+    FACEBOOK: `${API_BASE_URL}/auth/facebook`,
+    LOGIN: `${API_BASE_URL}/api/auth/login`,
+    SIGNUP: `${API_BASE_URL}/api/auth/signup`,
+    LOGOUT: `${API_BASE_URL}/api/auth/logout`,
+    PROFILE: `${API_BASE_URL}/api/auth/profile`,
   },
   CHAT: {
-    SEND_MESSAGE: '/api/chat/message',
-    GET_HISTORY: '/api/chat/history',
+    SEND_MESSAGE: `${API_BASE_URL}/api/chat/message`,
+    GET_HISTORY: `${API_BASE_URL}/api/chat/history`,
   },
 };
 
