@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { signUp, signInWithGoogle, signInWithFacebook } from '../services/authService';
 import "../styles/SignUp.css";
 import '../styles/App.css';
 
@@ -11,22 +12,108 @@ const SignUp = () => {
     email: "",
     password: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate();
 
+  const validateForm = () => {
+    const errors = {};
+
+    // Name validation
+    if (!formData.name.trim()) {
+      errors.name = "Name is required";
+    } else if (formData.name.trim().length < 2) {
+      errors.name = "Name must be at least 2 characters";
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    // Password validation
+    if (!formData.password) {
+      errors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      errors.password = "Password must be at least 6 characters";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    // Clear field error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors({ ...fieldErrors, [name]: "" });
+    }
+
+    // Clear general error
+    if (error) {
+      setError("");
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Sign Up with:", formData);
-    // Handle sign up logic here
-    navigate('/chat');
+
+    // Clear previous errors
+    setError("");
+    setFieldErrors({});
+
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await signUp(formData);
+
+      if (response.success) {
+        // Successfully signed up
+        navigate('/chat');
+      } else {
+        setError(response.message || 'Signup failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Signup error:', err);
+
+      // Handle specific error messages
+      if (err.message.includes('already exists')) {
+        setError('An account with this email already exists. Please sign in instead.');
+      } else if (err.message.includes('network') || err.message.includes('fetch')) {
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        setError(err.message || 'Signup failed. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const signUpWithGoogle = () => {
-    console.log("Google sign up clicked");
-    window.location.href = "/auth/google";
+  const handleGoogleSignUp = () => {
+    try {
+      signInWithGoogle();
+    } catch (err) {
+      setError('Failed to initiate Google sign up. Please try again.');
+    }
+  };
+
+  const handleFacebookSignUp = () => {
+    try {
+      signInWithFacebook();
+    } catch (err) {
+      setError('Failed to initiate Facebook sign up. Please try again.');
+    }
   };
 
   return (
@@ -114,45 +201,79 @@ const SignUp = () => {
             Start chatting with your AI companion
           </p>
 
-          <button onClick={signUpWithGoogle} className="google-btn">
-            Sign Up with Google
+          {/* Error Message */}
+          {error && (
+            <div className="error-message">
+              <span className="error-icon">⚠️</span>
+              {error}
+            </div>
+          )}
+
+          <button onClick={handleGoogleSignUp} className="google-btn" disabled={loading}>
+            🔍 Sign Up with Google
+          </button>
+
+          <button onClick={handleFacebookSignUp} className="facebook-btn" disabled={loading}>
+            📘 Sign Up with Facebook
           </button>
 
           <div className="divider">or</div>
 
           <form onSubmit={handleSubmit} className="signup-form">
-            <input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="signup-input"
-            />
+            <div className="form-field">
+              <input
+                type="text"
+                name="name"
+                placeholder="Full Name"
+                value={formData.name}
+                onChange={handleChange}
+                className={`signup-input ${fieldErrors.name ? 'error' : ''}`}
+                disabled={loading}
+              />
+              {fieldErrors.name && (
+                <span className="field-error">{fieldErrors.name}</span>
+              )}
+            </div>
 
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="signup-input"
-            />
+            <div className="form-field">
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`signup-input ${fieldErrors.email ? 'error' : ''}`}
+                disabled={loading}
+              />
+              {fieldErrors.email && (
+                <span className="field-error">{fieldErrors.email}</span>
+              )}
+            </div>
 
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="signup-input"
-            />
+            <div className="form-field">
+              <input
+                type="password"
+                name="password"
+                placeholder="Password (min 6 characters)"
+                value={formData.password}
+                onChange={handleChange}
+                className={`signup-input ${fieldErrors.password ? 'error' : ''}`}
+                disabled={loading}
+              />
+              {fieldErrors.password && (
+                <span className="field-error">{fieldErrors.password}</span>
+              )}
+            </div>
 
-            <button type="submit" className="signup-btn">
-              Sign Up
+            <button type="submit" className="signup-btn" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="spinner"></span>
+                  Signing Up...
+                </>
+              ) : (
+                'Sign Up'
+              )}
             </button>
           </form>
 

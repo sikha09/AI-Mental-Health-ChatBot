@@ -2,7 +2,6 @@ import { useState } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import SignInPopup from './components/SignInPopup';
-import { signInWithGoogle, signInWithFacebook } from './services/authService';
 import './styles/App.css';
 
 /**
@@ -12,33 +11,6 @@ import './styles/App.css';
  */
 function App() {
   const [showSignInPopup, setShowSignInPopup] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-
-  const handleSignIn = (e) => {
-    e.preventDefault();
-    console.log("Sign In with:", formData);
-    // Handle sign in logic here
-    setShowSignInPopup(false);
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleGoogleSignIn = () => {
-    signInWithGoogle();
-  };
-
-  const handleFacebookSignIn = () => {
-    signInWithFacebook();
-  };
 
   return (
     <>
@@ -119,11 +91,6 @@ function App() {
       <SignInPopup
         isOpen={showSignInPopup}
         onClose={() => setShowSignInPopup(false)}
-        formData={formData}
-        handleChange={handleChange}
-        handleSubmit={handleSignIn}
-        signInWithGoogle={handleGoogleSignIn}
-        signInWithFacebook={handleFacebookSignIn}
       />
     </>
   );
