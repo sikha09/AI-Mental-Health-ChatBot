@@ -39,13 +39,13 @@ statements.forEach((statement, index) => {
         // Check if all statements are done
         if (completed + errors === statements.length) {
             console.log('\n📊 Database initialization summary:');
-            console.log(`   ✅ Successful: ${completed}`);
-            console.log(`   ❌ Errors: ${errors}`);
+            console.log(` Successful: ${completed}`);
+            console.log(`  Errors: ${errors}`);
 
             if (errors === 0) {
                 console.log('\n🎉 Database initialized successfully!');
             } else {
-                console.log('\n⚠️  Database initialization completed with errors.');
+                console.log('\n Database initialization completed with errors.');
             }
 
             process.exit(errors > 0 ? 1 : 0);

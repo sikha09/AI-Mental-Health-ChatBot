@@ -1,0 +1,132 @@
+.verify-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+
+.verify-modal {
+    background-color: #1a1a2e;
+    width: 90%;
+    max-width: 400px;
+    padding: 2rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    position: relative;
+    color: white;
+}
+
+.verify-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.verify-modal h2 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    color: #fff;
+}
+
+.verify-modal p {
+    color: #a0a0b0;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.otp-input-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.otp-input {
+    width: 45px;
+    height: 55px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.otp-input:focus {
+    border-color: #7269E3;
+    background: rgba(114, 105, 227, 0.1);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(114, 105, 227, 0.3);
+}
+
+.verify-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #7269E3, #5B52D6);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.verify-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(114, 105, 227, 0.4);
+}
+
+.verify-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.error-message {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.resend-text {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: #a0a0b0;
+}
+
+.resend-link {
+    color: #7269E3;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    font-weight: 500;
+    padding: 0;
+    margin-left: 5px;
+}
+
+.resend-link:hover {
+    color: #8c85e8;
+}
+
+.resend-link:disabled {
+    color: #555;
+    cursor: not-allowed;
+    text-decoration: none;
+}

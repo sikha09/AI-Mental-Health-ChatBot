@@ -14,6 +14,9 @@ CREATE TABLE users (
     auth_provider ENUM('local', 'google', 'facebook') DEFAULT 'local',
     provider_id VARCHAR(255) NULL,  -- OAuth provider's user ID
     avatar_url VARCHAR(500) NULL,  -- Profile picture URL
+    otp_code VARCHAR(6) NULL,
+    otp_expires_at DATETIME NULL,
+    is_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),

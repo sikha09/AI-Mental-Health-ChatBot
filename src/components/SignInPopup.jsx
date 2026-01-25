@@ -59,6 +59,8 @@ const SignInPopup = ({ isOpen, onClose }) => {
     }
   };
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -87,8 +89,10 @@ const SignInPopup = ({ isOpen, onClose }) => {
       console.error('Login error:', err);
 
       // Handle specific error messages
-      if (err.message.includes('Invalid email or password')) {
-        setError('Invalid email or password. Please try again.');
+      if (err.message.includes('Email does not exist')) {
+        setError('Email does not exist. Please sign up first.');
+      } else if (err.message.includes('Invalid password')) {
+        setError('Invalid password. Please try again.');
       } else if (err.message.includes('network') || err.message.includes('fetch')) {
         setError('Network error. Please check your connection and try again.');
       } else {
@@ -124,10 +128,11 @@ const SignInPopup = ({ isOpen, onClose }) => {
         {/* Error Message */}
         {error && (
           <div className="error-message">
-            <span className="error-icon">⚠️</span>
+            <span className="error-icon">Error</span>
             {error}
           </div>
         )}
+
 
         <form onSubmit={handleSubmit} className="signin-form">
           <div className="form-field">
@@ -177,10 +182,10 @@ const SignInPopup = ({ isOpen, onClose }) => {
         </div>
 
         <button onClick={handleGoogleSignIn} className="google-btn" disabled={loading}>
-          🔍 Sign In with Google
+          Sign In with Google
         </button>
         <button onClick={handleFacebookSignIn} className="facebook-btn" disabled={loading}>
-          📘 Sign In with Facebook
+          Sign In with Facebook
         </button>
 
         <p className="signup-text">

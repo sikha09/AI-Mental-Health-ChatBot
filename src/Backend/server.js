@@ -3,7 +3,7 @@ const cors = require("cors");
 const session = require("express-session");
 const passport = require("./passport-config");
 const db = require("./db");
-const { signup, login, getProfile, verifyToken, generateToken } = require("./auth");
+const { signup, login, getProfile, verifyToken, generateToken, verifyEmail, resendVerification } = require("./auth");
 require("dotenv").config();
 
 const app = express();
@@ -54,6 +54,12 @@ app.post("/api/auth/signup", signup);
 // Login route
 app.post("/api/auth/login", login);
 
+// Verify Email route
+app.post("/api/auth/verify-email", verifyEmail);
+
+// Resend Verification route
+app.post("/api/auth/resend-verification", resendVerification);
+
 // Get user profile (protected route)
 app.get("/api/auth/profile", verifyToken, getProfile);
 
@@ -81,9 +87,14 @@ app.get("/auth/google",
 // Google OAuth - Callback
 app.get("/auth/google/callback",
   passport.authenticate("google", {
-    failureRedirect: `${process.env.FRONTEND_URL}/signin?error=google_auth_failed`
+    failureRedirect: `${process.env.FRONTEND_URL}/signup?error=google_auth_failed`
   }),
   (req, res) => {
+    // Check if authentication failed due to existing user
+    if (!req.user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/signup?error=user_already_exists`);
+    }
+
     // Generate JWT token for the authenticated user
     const token = generateToken(req.user.id);
 
@@ -106,9 +117,14 @@ app.get("/auth/facebook",
 // Facebook OAuth - Callback
 app.get("/auth/facebook/callback",
   passport.authenticate("facebook", {
-    failureRedirect: `${process.env.FRONTEND_URL}/signin?error=facebook_auth_failed`
+    failureRedirect: `${process.env.FRONTEND_URL}/signup?error=facebook_auth_failed`
   }),
   (req, res) => {
+    // Check if authentication failed due to existing user
+    if (!req.user) {
+      return res.redirect(`${process.env.FRONTEND_URL}/signup?error=user_already_exists`);
+    }
+
     // Generate JWT token for the authenticated user
     const token = generateToken(req.user.id);
 
@@ -127,6 +143,34 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+
+// Verify database connection before starting server
+db.getConnection((err, connection) => {
+  if (err) {
+    console.error('\n❌ Failed to connect to database. Server will not start.');
+    console.error('❌ Please fix the database connection and try again.\n');
+    process.exit(1);
+  }
+
+  connection.release();
+
+  // Start server only if database is connected
+  app.listen(PORT, () => {
+    console.log('\n' + '='.repeat(50));
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+    console.log(`📊 Database: ${process.env.DB_NAME || 'chatbot_db'}`);
+    console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+    console.log('='.repeat(50) + '\n');
+    console.log('Available endpoints:');
+    console.log(`  GET  / - Health check`);
+    console.log(`  GET  /test-db - Database test`);
+    console.log(`  POST /api/auth/signup - User signup`);
+    console.log(`  POST /api/auth/login - User login`);
+    console.log(`  POST /api/auth/verify-email - Verify email`);
+    console.log(`  POST /api/auth/resend-verification - Resend OTP`);
+    console.log(`  GET  /api/auth/profile - Get user profile`);
+    console.log(`  GET  /auth/google - Google OAuth`);
+    console.log(`  GET  /auth/facebook - Facebook OAuth`);
+    console.log('\n');
+  });
 });

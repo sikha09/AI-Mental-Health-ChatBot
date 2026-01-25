@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { signUp, signInWithGoogle, signInWithFacebook } from '../services/authService';
+import VerifyEmail from '../components/VerifyEmail';
 import "../styles/SignUp.css";
 import '../styles/App.css';
 
@@ -14,8 +15,25 @@ const SignUp = () => {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+  const [userExistsError, setUserExistsError] = useState(false);
   const navigate = useNavigate();
+
+  // Check for OAuth errors in URL
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorParam = urlParams.get('error');
+
+    if (errorParam === 'user_already_exists') {
+      setError('An account with this email already exists. Please sign in with your email and password instead.');
+    } else if (errorParam === 'google_auth_failed') {
+      setError('Google authentication failed. Please try again.');
+    } else if (errorParam === 'facebook_auth_failed') {
+      setError('Facebook authentication failed. Please try again.');
+    }
+  }, []);
 
   const validateForm = () => {
     const errors = {};
@@ -58,6 +76,7 @@ const SignUp = () => {
     // Clear general error
     if (error) {
       setError("");
+      setUserExistsError(false);
     }
   };
 
@@ -67,6 +86,7 @@ const SignUp = () => {
     // Clear previous errors
     setError("");
     setFieldErrors({});
+    setUserExistsError(false);
 
     // Validate form
     if (!validateForm()) {
@@ -78,8 +98,9 @@ const SignUp = () => {
     try {
       const response = await signUp(formData);
 
-      if (response.success) {
-        // Successfully signed up
+      if (response.success && response.token) {
+        // Successfully signed up and logged in
+        console.log('✅ Signup successful, redirecting to chat...');
         navigate('/chat');
       } else {
         setError(response.message || 'Signup failed. Please try again.');
@@ -89,6 +110,7 @@ const SignUp = () => {
 
       // Handle specific error messages
       if (err.message.includes('already exists')) {
+        setUserExistsError(true);
         setError('An account with this email already exists. Please sign in instead.');
       } else if (err.message.includes('network') || err.message.includes('fetch')) {
         setError('Network error. Please check your connection and try again.');
@@ -203,18 +225,29 @@ const SignUp = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="error-message">
-              <span className="error-icon">⚠️</span>
-              {error}
+            <div className={`error-message ${userExistsError ? 'user-exists-error' : ''}`}>
+              <span className="error-icon">⚠</span>
+              <div className="error-content">
+                <p>{error}</p>
+                {userExistsError && (
+                  <button
+                    onClick={() => navigate('/')}
+                    className="go-to-login-btn"
+                    type="button"
+                  >
+                    Go to Login
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
           <button onClick={handleGoogleSignUp} className="google-btn" disabled={loading}>
-            🔍 Sign Up with Google
+            Sign Up with Google
           </button>
 
           <button onClick={handleFacebookSignUp} className="facebook-btn" disabled={loading}>
-            📘 Sign Up with Facebook
+            Sign Up with Facebook
           </button>
 
           <div className="divider">or</div>

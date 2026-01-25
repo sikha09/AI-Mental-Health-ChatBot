@@ -14,7 +14,7 @@ const Chat = ({ setIsLoggedIn }) => {
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
-        { sender: "Chatbot 🤖", text: "Hello! I'm Chatbot" }
+        { sender: "Chatbot", text: "Hello! I'm Chatbot" }
       ]);
     }, 500);
   };

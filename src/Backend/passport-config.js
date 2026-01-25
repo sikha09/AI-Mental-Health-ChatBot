@@ -39,61 +39,72 @@ passport.use(
                 const providerId = profile.id;
                 const avatarUrl = profile.photos[0]?.value || null;
 
-                // Check if user exists
-                const checkQuery = 'SELECT * FROM users WHERE email = ? OR (auth_provider = ? AND provider_id = ?)';
-                db.query(checkQuery, [email, 'google', providerId], (err, results) => {
+                // Check if user exists with this email
+                const checkQuery = 'SELECT * FROM users WHERE email = ?';
+                db.query(checkQuery, [email], (err, results) => {
                     if (err) return done(err);
 
                     if (results.length > 0) {
-                        // User exists, update OAuth token
-                        const user = results[0];
+                        const existingUser = results[0];
 
-                        // Update or insert OAuth token
-                        const tokenQuery = `
-              INSERT INTO oauth_tokens (user_id, provider, access_token, refresh_token, expires_at)
-              VALUES (?, 'google', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
-              ON DUPLICATE KEY UPDATE 
-                access_token = VALUES(access_token),
-                refresh_token = VALUES(refresh_token),
-                expires_at = VALUES(expires_at)
-            `;
-                        db.query(tokenQuery, [user.id, accessToken, refreshToken], (err) => {
-                            if (err) console.error('Token update error:', err);
-                        });
+                        // If user exists with local auth (email/password), prevent Google signup
+                        if (existingUser.auth_provider === 'local') {
+                            return done(null, false, {
+                                message: 'user_already_exists_with_email',
+                                email: email
+                            });
+                        }
 
-                        return done(null, user);
-                    } else {
-                        // Create new user
-                        const insertQuery = `
-              INSERT INTO users (email, name, auth_provider, provider_id, avatar_url)
-              VALUES (?, ?, 'google', ?, ?)
-            `;
-                        db.query(insertQuery, [email, name, providerId, avatarUrl], (err, result) => {
-                            if (err) return done(err);
-
-                            const userId = result.insertId;
-
-                            // Insert OAuth token
+                        // If user exists with Google, update OAuth token and login
+                        if (existingUser.auth_provider === 'google') {
+                            // Update or insert OAuth token
                             const tokenQuery = `
-                INSERT INTO oauth_tokens (user_id, provider, access_token, refresh_token, expires_at)
-                VALUES (?, 'google', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
-              `;
-                            db.query(tokenQuery, [userId, accessToken, refreshToken], (err) => {
-                                if (err) console.error('Token insert error:', err);
+                              INSERT INTO oauth_tokens (user_id, provider, access_token, refresh_token, expires_at)
+                              VALUES (?, 'google', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
+                              ON DUPLICATE KEY UPDATE 
+                                access_token = VALUES(access_token),
+                                refresh_token = VALUES(refresh_token),
+                                expires_at = VALUES(expires_at)
+                            `;
+                            db.query(tokenQuery, [existingUser.id, accessToken, refreshToken], (err) => {
+                                if (err) console.error('Token update error:', err);
                             });
 
-                            const newUser = {
-                                id: userId,
-                                email,
-                                name,
-                                auth_provider: 'google',
-                                provider_id: providerId,
-                                avatar_url: avatarUrl
-                            };
-
-                            return done(null, newUser);
-                        });
+                            return done(null, existingUser);
+                        }
                     }
+
+                    // Create new user with Google auth
+                    const insertQuery = `
+                      INSERT INTO users (email, name, auth_provider, provider_id, avatar_url, is_verified)
+                      VALUES (?, ?, 'google', ?, ?, TRUE)
+                    `;
+                    db.query(insertQuery, [email, name, providerId, avatarUrl], (err, result) => {
+                        if (err) return done(err);
+
+                        const userId = result.insertId;
+
+                        // Insert OAuth token
+                        const tokenQuery = `
+                            INSERT INTO oauth_tokens (user_id, provider, access_token, refresh_token, expires_at)
+                            VALUES (?, 'google', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
+                          `;
+                        db.query(tokenQuery, [userId, accessToken, refreshToken], (err) => {
+                            if (err) console.error('Token insert error:', err);
+                        });
+
+                        const newUser = {
+                            id: userId,
+                            email,
+                            name,
+                            auth_provider: 'google',
+                            provider_id: providerId,
+                            avatar_url: avatarUrl,
+                            is_verified: true
+                        };
+
+                        return done(null, newUser);
+                    });
                 });
             } catch (error) {
                 return done(error);
@@ -120,61 +131,72 @@ passport.use(
                 const providerId = profile.id;
                 const avatarUrl = profile.photos[0]?.value || null;
 
-                // Check if user exists
-                const checkQuery = 'SELECT * FROM users WHERE email = ? OR (auth_provider = ? AND provider_id = ?)';
-                db.query(checkQuery, [email, 'facebook', providerId], (err, results) => {
+                // Check if user exists with this email
+                const checkQuery = 'SELECT * FROM users WHERE email = ?';
+                db.query(checkQuery, [email], (err, results) => {
                     if (err) return done(err);
 
                     if (results.length > 0) {
-                        // User exists, update OAuth token
-                        const user = results[0];
+                        const existingUser = results[0];
 
-                        // Update or insert OAuth token
-                        const tokenQuery = `
-              INSERT INTO oauth_tokens (user_id, provider, access_token, refresh_token, expires_at)
-              VALUES (?, 'facebook', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
-              ON DUPLICATE KEY UPDATE 
-                access_token = VALUES(access_token),
-                refresh_token = VALUES(refresh_token),
-                expires_at = VALUES(expires_at)
-            `;
-                        db.query(tokenQuery, [user.id, accessToken, refreshToken], (err) => {
-                            if (err) console.error('Token update error:', err);
-                        });
+                        // If user exists with local auth (email/password), prevent Facebook signup
+                        if (existingUser.auth_provider === 'local') {
+                            return done(null, false, {
+                                message: 'user_already_exists_with_email',
+                                email: email
+                            });
+                        }
 
-                        return done(null, user);
-                    } else {
-                        // Create new user
-                        const insertQuery = `
-              INSERT INTO users (email, name, auth_provider, provider_id, avatar_url)
-              VALUES (?, ?, 'facebook', ?, ?)
-            `;
-                        db.query(insertQuery, [email, name, providerId, avatarUrl], (err, result) => {
-                            if (err) return done(err);
-
-                            const userId = result.insertId;
-
-                            // Insert OAuth token
+                        // If user exists with Facebook, update OAuth token and login
+                        if (existingUser.auth_provider === 'facebook') {
+                            // Update or insert OAuth token
                             const tokenQuery = `
-                INSERT INTO oauth_tokens (user_id, provider, access_token, refresh_token, expires_at)
-                VALUES (?, 'facebook', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
-              `;
-                            db.query(tokenQuery, [userId, accessToken, refreshToken], (err) => {
-                                if (err) console.error('Token insert error:', err);
+                              INSERT INTO oauth_tokens (user_id, provider, access_token, refresh_token, expires_at)
+                              VALUES (?, 'facebook', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
+                              ON DUPLICATE KEY UPDATE 
+                                access_token = VALUES(access_token),
+                                refresh_token = VALUES(refresh_token),
+                                expires_at = VALUES(expires_at)
+                            `;
+                            db.query(tokenQuery, [existingUser.id, accessToken, refreshToken], (err) => {
+                                if (err) console.error('Token update error:', err);
                             });
 
-                            const newUser = {
-                                id: userId,
-                                email,
-                                name,
-                                auth_provider: 'facebook',
-                                provider_id: providerId,
-                                avatar_url: avatarUrl
-                            };
-
-                            return done(null, newUser);
-                        });
+                            return done(null, existingUser);
+                        }
                     }
+
+                    // Create new user with Facebook auth
+                    const insertQuery = `
+                      INSERT INTO users (email, name, auth_provider, provider_id, avatar_url, is_verified)
+                      VALUES (?, ?, 'facebook', ?, ?, TRUE)
+                    `;
+                    db.query(insertQuery, [email, name, providerId, avatarUrl], (err, result) => {
+                        if (err) return done(err);
+
+                        const userId = result.insertId;
+
+                        // Insert OAuth token
+                        const tokenQuery = `
+                            INSERT INTO oauth_tokens (user_id, provider, access_token, refresh_token, expires_at)
+                            VALUES (?, 'facebook', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
+                          `;
+                        db.query(tokenQuery, [userId, accessToken, refreshToken], (err) => {
+                            if (err) console.error('Token insert error:', err);
+                        });
+
+                        const newUser = {
+                            id: userId,
+                            email,
+                            name,
+                            auth_provider: 'facebook',
+                            provider_id: providerId,
+                            avatar_url: avatarUrl,
+                            is_verified: true
+                        };
+
+                        return done(null, newUser);
+                    });
                 });
             } catch (error) {
                 return done(error);

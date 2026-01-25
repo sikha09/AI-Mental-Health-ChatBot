@@ -35,7 +35,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="footer-bottom">
-        <p className="footer-copyright">Copyright © 2020 Luka, Inc. All rights reserved.</p>
+        <p className="footer-copyright">Copyright © 2026 Sikha Limbu.</p>
         <div className="footer-legal">
           <a href="#" className="footer-link">Terms of service</a>
           <a href="#" className="footer-link">Privacy policy</a>

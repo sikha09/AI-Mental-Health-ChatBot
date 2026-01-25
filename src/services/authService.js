@@ -62,6 +62,7 @@ export const signUp = async (userData) => {
       throw new Error(data.message || 'Sign up failed');
     }
 
+    // Store token and user data for immediate login
     if (data.success && data.token) {
       setStorage(STORAGE_KEYS.AUTH_TOKEN, data.token);
       setStorage(STORAGE_KEYS.USER_DATA, data.user);
@@ -70,6 +71,40 @@ export const signUp = async (userData) => {
     return data;
   } catch (error) {
     console.error('Sign up error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Verify email with OTP
+ * @param {string} email - User email
+ * @param {string} otp - OTP code
+ * @returns {Promise<object>} User data and token
+ */
+export const verifyEmail = async (email, otp) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, otp }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Verification failed');
+    }
+
+    if (data.success && data.token) {
+      setStorage(STORAGE_KEYS.AUTH_TOKEN, data.token);
+      setStorage(STORAGE_KEYS.USER_DATA, data.user);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Verification error:', error);
     throw error;
   }
 };
