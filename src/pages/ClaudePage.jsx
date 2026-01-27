@@ -1,53 +1,48 @@
 import { useState } from "react";
-import '../styles/Chat.css';
+import Sidebar from '../components/Sidebar/Sidebar';
+import ChatArea from '../components/ChatArea/ChatArea';
+import '../styles/ClaudePage.css';
 
-const Chat = ({ setIsLoggedIn }) => {
+const ClaudePage = ({ setIsLoggedIn }) => {
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
+  const handleSendMessage = (text) => {
+    if (!text.trim()) return;
 
-    setMessages([...messages, { sender: "You", text: input }]);
-    setInput("");
+    // Add user message
+    setMessages(prev => [...prev, { sender: "You", text }]);
 
+    // Simulate bot response
     setTimeout(() => {
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
-        { sender: "Chatbot", text: "Hello! I'm Chatbot" }
+        { sender: "Chatbot", text: "Hello! I'm here to help you. How can I assist you today?" }
       ]);
     }, 500);
   };
 
+  const handleNewChat = () => {
+    setMessages([]);
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
-    <div className="chat-container">
-      <div className="header">
-        <h2>Chatbot</h2>
-        <button className="logout-btn" onClick={() => setIsLoggedIn && setIsLoggedIn(false)}>
-          Logout
-        </button>
-      </div>
-
-      <div className="chat-box">
-        {messages.map((msg, index) => (
-          <p key={index} className="message">
-            <strong>{msg.sender}: </strong> {msg.text}
-          </p>
-        ))}
-      </div>
-
-      <div className="input-section">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message..."
-          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-        />
-        <button onClick={sendMessage}>Send</button>
-      </div>
+    <div className="claude-page">
+      <Sidebar
+        isOpen={isSidebarOpen}
+        toggleSidebar={toggleSidebar}
+        onNewChat={handleNewChat}
+      />
+      <ChatArea
+        messages={messages}
+        onSendMessage={handleSendMessage}
+      />
     </div>
   );
 };
 
-export default Chat;
-
+export default ClaudePage;

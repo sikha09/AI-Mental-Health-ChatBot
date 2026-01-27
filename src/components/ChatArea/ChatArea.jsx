@@ -87,4 +87,4 @@ const ChatArea = ({ messages = [], onSendMessage }) => {
     );
 };
 
-export default ChatArea;
+export default ChatArea;    

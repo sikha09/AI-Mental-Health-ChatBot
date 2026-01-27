@@ -1,11 +1,11 @@
 .sidebar {
     width: 260px;
     height: 100vh;
-    background-color: #202123;
+    background-color: #171827;
     color: #ececf1;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #4d4d4f;
+    border-right: 1px solid #2a2d47;
     transition: transform 0.3s ease;
 }
 
@@ -17,7 +17,7 @@
     width: 100%;
     padding: 10px;
     background: transparent;
-    border: 1px solid #565869;
+    border: 1px solid #3a3d5c;
     border-radius: 5px;
     color: white;
     text-align: left;
@@ -29,7 +29,7 @@
 }
 
 .new-chat-btn:hover {
-    background-color: #2A2B32;
+    background-color: #1f2237;
 }
 
 .sidebar-history {
@@ -62,12 +62,12 @@
 }
 
 .history-item:hover {
-    background-color: #2A2B32;
+    background-color: #1f2237;
 }
 
 .sidebar-footer {
     padding: 12px;
-    border-top: 1px solid #4d4d4f;
+    border-top: 1px solid #2a2d47;
 }
 
 .user-profile-btn {
@@ -80,16 +80,17 @@
     cursor: pointer;
     padding: 8px;
     border-radius: 6px;
+    color: #ececf1;
 }
 
 .user-profile-btn:hover {
-    background-color: #2A2B32;
+    background-color: #1f2237;
 }
 
 .avatar {
     width: 32px;
     height: 32px;
-    background-color: #7c3aed;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 4px;
     display: flex;
     align-items: center;

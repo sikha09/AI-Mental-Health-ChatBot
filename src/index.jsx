@@ -4,8 +4,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import App from './App';
 import Signup from './pages/SignUp';
-import Chat from './pages/Chat';
-import { ClaudePage, OAuthCallback } from './pages';
+import ClaudePage from './pages/ClaudePage';
+import { OAuthCallback } from './pages';
 import ROUTES from './config/routes';
 import './styles/index.css';
 
@@ -28,4 +28,3 @@ createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </StrictMode>
 );
-
