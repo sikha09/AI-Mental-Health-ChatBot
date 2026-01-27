@@ -1,7 +1,7 @@
 const mysql = require("mysql2");
 require("dotenv").config();
 
-console.log('🔄 Starting database migration...\n');
+console.log('Starting database migration...\n');
 
 const connection = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
@@ -14,15 +14,15 @@ const connection = mysql.createConnection({
 
 connection.connect((err) => {
     if (err) {
-        console.error('❌ Connection failed:', err.message);
+        console.error('Connection failed:', err.message);
         if (err.code === 'ER_BAD_DB_ERROR') {
-            console.error('❌ Database does not exist. Please create it first:');
+            console.error('Database does not exist. Please create it first:');
             console.error(`   CREATE DATABASE ${process.env.DB_NAME || 'chatbot_db'};`);
         }
         process.exit(1);
     }
 
-    console.log('✅ Connected to database\n');
+    console.log('Connected to database\n');
 
     // SQL to create/update the users table
     const sql = `
@@ -65,21 +65,21 @@ connection.connect((err) => {
 
     connection.query(sql, (err, results) => {
         if (err) {
-            console.error('❌ Migration failed:', err.message);
+            console.error('Migration failed:', err.message);
             connection.end();
             process.exit(1);
             return;
         }
 
-        console.log('✅ Tables dropped (if existed)');
-        console.log('✅ users table created successfully');
-        console.log('✅ oauth_tokens table created successfully');
-        console.log('\n📊 Database migration completed!\n');
+        console.log('Tables dropped (if existed)');
+        console.log('users table created successfully');
+        console.log('oauth_tokens table created successfully');
+        console.log('\n Database migration completed!\n');
 
         // Verify the structure
         connection.query('DESCRIBE users', (err, results) => {
             if (err) {
-                console.error('❌ Error verifying table:', err.message);
+                console.error('Error verifying table:', err.message);
             } else {
                 console.log('Users table structure:');
                 console.log('='.repeat(80));
@@ -90,7 +90,7 @@ connection.connect((err) => {
             }
 
             connection.end();
-            console.log('\n✅ Database is ready for use!\n');
+            console.log('\n Database is ready for use!\n');
             process.exit(0);
         });
     });
