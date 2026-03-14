@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('./db');
+const { sendOTPEmail } = require('./emailService');
 
 /**
  * Generate JWT token for user
@@ -63,9 +64,6 @@ const signup = async (req, res) => {
       });
     }
 
-    // Hash password
-    const hashedPassword = await hashPassword(password);
-
     // Check if user already exists
     const checkUserQuery = 'SELECT * FROM users WHERE email = ?';
     db.query(checkUserQuery, [email], async (err, results) => {
@@ -78,16 +76,23 @@ const signup = async (req, res) => {
       }
 
       if (results.length > 0) {
-        // User already exists
+        // Email already registered - stop immediately
         return res.status(400).json({
           success: false,
-          message: 'User already exists. Please login instead.'
+          message: 'Email already registered. Please login instead.'
         });
       }
 
-      // Insert new user - set as verified immediately (no email verification required)
-      const insertQuery = 'INSERT INTO users (email, password, name, auth_provider, is_verified) VALUES (?, ?, ?, ?, ?)';
-      db.query(insertQuery, [email, hashedPassword, name, 'local', true], (err, result) => {
+      // Hash password for security
+      const hashedPassword = await hashPassword(password);
+
+      // Generate OTP for email verification
+      const otp = generateOTP();
+      const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+      // Create new user with is_verified = false
+      const insertQuery = 'INSERT INTO users (email, password, name, auth_provider, is_verified, otp_code, otp_expires_at) VALUES (?, ?, ?, ?, ?, ?, ?)';
+      db.query(insertQuery, [email, hashedPassword, name, 'local', false, otp, otpExpires], (err, result) => {
         if (err) {
           console.error('Database error:', err);
           return res.status(500).json({
@@ -98,21 +103,29 @@ const signup = async (req, res) => {
 
         const userId = result.insertId;
 
-        // Generate token for immediate login
-        const token = generateToken(userId);
-
-        console.log(`✅ New user created: ${email} (ID: ${userId})`);
+        // Send OTP via email
+        sendOTPEmail(email, otp, name).then(emailSent => {
+          if (emailSent) {
+            console.log(`============================================`);
+            console.log(`NEW USER SIGNUP: ${email}`);
+            console.log(`VERIFICATION CODE SENT TO EMAIL`);
+            console.log(`EXPIRES AT: ${otpExpires}`);
+            console.log(`============================================`);
+          } else {
+            console.log(`============================================`);
+            console.log(`NEW USER SIGNUP: ${email}`);
+            console.log(`WARNING: Email sending failed`);
+            console.log(`VERIFICATION CODE (FALLBACK): ${otp}`);
+            console.log(`EXPIRES AT: ${otpExpires}`);
+            console.log(`============================================`);
+          }
+        });
 
         res.status(201).json({
           success: true,
-          message: 'Signup successful',
-          token,
-          user: {
-            id: userId,
-            email: email,
-            name: name,
-            auth_provider: 'local'
-          }
+          message: 'Signup successful! Please check your email for the verification code.',
+          requiresVerification: true,
+          email: email
         });
       });
     });
@@ -153,9 +166,10 @@ const login = async (req, res) => {
 
       // Check if email exists
       if (results.length === 0) {
-        return res.status(404).json({
+        // Generic error message for security (don't reveal if email exists)
+        return res.status(401).json({
           success: false,
-          message: 'Email does not exist. Please sign up first.'
+          message: 'Invalid email or password'
         });
       }
 
@@ -172,14 +186,61 @@ const login = async (req, res) => {
       // Check password
       const isPasswordValid = await comparePassword(password, user.password);
       if (!isPasswordValid) {
+        // Generic error message for security (don't reveal which part is wrong)
         return res.status(401).json({
           success: false,
-          message: 'Invalid password'
+          message: 'Invalid email or password'
         });
       }
 
-      // Generate token
+      // Check if account is verified
+      if (!user.is_verified) {
+        // Account not verified - resend verification code
+        const otp = generateOTP();
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        const updateQuery = 'UPDATE users SET otp_code = ?, otp_expires_at = ? WHERE id = ?';
+        db.query(updateQuery, [otp, otpExpires, user.id], (err, result) => {
+          if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({
+              success: false,
+              message: 'Server error'
+            });
+          }
+
+          // Send OTP via email
+          sendOTPEmail(email, otp, user.name).then(emailSent => {
+            if (emailSent) {
+              console.log(`============================================`);
+              console.log(`RESENDING VERIFICATION TO: ${email}`);
+              console.log(`NEW VERIFICATION CODE SENT TO EMAIL`);
+              console.log(`EXPIRES AT: ${otpExpires}`);
+              console.log(`============================================`);
+            } else {
+              console.log(`============================================`);
+              console.log(`RESENDING VERIFICATION TO: ${email}`);
+              console.log(`WARNING: Email sending failed`);
+              console.log(`NEW VERIFICATION CODE (FALLBACK): ${otp}`);
+              console.log(`EXPIRES AT: ${otpExpires}`);
+              console.log(`============================================`);
+            }
+          });
+
+          return res.status(403).json({
+            success: false,
+            message: 'Account not verified. A new verification code has been sent to your email.',
+            requiresVerification: true,
+            email: user.email
+          });
+        });
+        return; // Prevent further execution
+      }
+
+      // All checks passed - generate token and allow login
       const token = generateToken(user.id);
+
+      console.log(`User logged in: ${email}`);
 
       res.json({
         success: true,
@@ -354,12 +415,23 @@ const resendVerification = async (req, res) => {
           });
         }
 
-        // TODO: Integrate Nodemailer here to send real email
-        console.log(`============================================`);
-        console.log(`RESENDING VERIFICATION TO: ${email}`);
-        console.log(`NEW OTP CODE: ${otp}`);
-        console.log(`EXPIRES AT: ${otpExpires}`);
-        console.log(`============================================`);
+        // Send OTP via email
+        sendOTPEmail(email, otp, user.name).then(emailSent => {
+          if (emailSent) {
+            console.log(`============================================`);
+            console.log(`RESENDING VERIFICATION TO: ${email}`);
+            console.log(`NEW OTP CODE SENT TO EMAIL`);
+            console.log(`EXPIRES AT: ${otpExpires}`);
+            console.log(`============================================`);
+          } else {
+            console.log(`============================================`);
+            console.log(`RESENDING VERIFICATION TO: ${email}`);
+            console.log(`WARNING: Email sending failed`);
+            console.log(`NEW OTP CODE (FALLBACK): ${otp}`);
+            console.log(`EXPIRES AT: ${otpExpires}`);
+            console.log(`============================================`);
+          }
+        });
 
         res.json({
           success: true,

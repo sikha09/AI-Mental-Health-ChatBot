@@ -1,17 +1,19 @@
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
+require('dotenv').config();
 const passport = require("./passport-config");
 const db = require("./db");
 const { signup, login, getProfile, verifyToken, generateToken, verifyEmail, resendVerification } = require("./auth");
-require("dotenv").config();
 
 const app = express();
 
 // Middleware
 app.use(cors({
   origin: process.env.FRONTEND_URL,
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -103,35 +105,6 @@ app.get("/auth/google/callback",
   }
 );
 
-// ============================================
-// OAuth Routes - Facebook
-// ============================================
-
-// Facebook OAuth - Initiate
-app.get("/auth/facebook",
-  passport.authenticate("facebook", {
-    scope: ["email"]
-  })
-);
-
-// Facebook OAuth - Callback
-app.get("/auth/facebook/callback",
-  passport.authenticate("facebook", {
-    failureRedirect: `${process.env.FRONTEND_URL}/signup?error=facebook_auth_failed`
-  }),
-  (req, res) => {
-    // Check if authentication failed due to existing user
-    if (!req.user) {
-      return res.redirect(`${process.env.FRONTEND_URL}/signup?error=user_already_exists`);
-    }
-
-    // Generate JWT token for the authenticated user
-    const token = generateToken(req.user.id);
-
-    // Redirect to frontend with token
-    res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}&provider=facebook`);
-  }
-);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -147,8 +120,8 @@ const PORT = process.env.PORT || 5000;
 // Verify database connection before starting server
 db.getConnection((err, connection) => {
   if (err) {
-    console.error('\n❌ Failed to connect to database. Server will not start.');
-    console.error('❌ Please fix the database connection and try again.\n');
+    console.error('\n Failed to connect to database. Server will not start.');
+    console.error('Please fix the database connection and try again.\n');
     process.exit(1);
   }
 
@@ -157,9 +130,9 @@ db.getConnection((err, connection) => {
   // Start server only if database is connected
   app.listen(PORT, () => {
     console.log('\n' + '='.repeat(50));
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
-    console.log(`📊 Database: ${process.env.DB_NAME || 'chatbot_db'}`);
-    console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Database: ${process.env.DB_NAME || 'chatbot_db'}`);
+    console.log(` Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
     console.log('='.repeat(50) + '\n');
     console.log('Available endpoints:');
     console.log(`  GET  / - Health check`);
@@ -170,7 +143,6 @@ db.getConnection((err, connection) => {
     console.log(`  POST /api/auth/resend-verification - Resend OTP`);
     console.log(`  GET  /api/auth/profile - Get user profile`);
     console.log(`  GET  /auth/google - Google OAuth`);
-    console.log(`  GET  /auth/facebook - Facebook OAuth`);
     console.log('\n');
   });
 });

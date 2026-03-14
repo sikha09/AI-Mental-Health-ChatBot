@@ -104,6 +104,18 @@
     gap: 8px;
 }
 
+.success-message {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .resend-text {
     margin-top: 1.5rem;
     font-size: 0.9rem;

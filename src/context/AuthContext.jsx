@@ -5,8 +5,14 @@ import { isAuthenticated, getCurrentUser, signOut as authSignOut } from '../serv
  * Authentication Context
  * 
  * Provides authentication state and methods to all components.
+ * 
+ * IMPORTANT: useAuthContext hook is in a separate file (useAuthContext.js)
+ * to comply with Vite Fast Refresh rules - a file cannot export both
+ * a component and a hook.
  */
 const AuthContext = createContext(null);
+
+export { AuthContext };
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -42,16 +48,3 @@ export const AuthProvider = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-/**
- * Hook to use authentication context
- * @returns {object} Auth context value
- */
-export const useAuthContext = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuthContext must be used within AuthProvider');
-  }
-  return context;
-};
-

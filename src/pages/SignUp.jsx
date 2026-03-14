@@ -98,9 +98,13 @@ const SignUp = () => {
     try {
       const response = await signUp(formData);
 
-      if (response.success && response.token) {
-        // Successfully signed up and logged in
-        console.log('✅ Signup successful, redirecting to chat...');
+      if (response.success && response.requiresVerification) {
+        // Show verification modal
+        setUserEmail(response.email);
+        setShowVerifyModal(true);
+      } else if (response.success && response.token) {
+        // Successfully signed up and logged in (OAuth users)
+        console.log('Signup successful, redirecting to chat...');
         navigate('/chat');
       } else {
         setError(response.message || 'Signup failed. Please try again.');
@@ -109,7 +113,7 @@ const SignUp = () => {
       console.error('Signup error:', err);
 
       // Handle specific error messages
-      if (err.message.includes('already exists')) {
+      if (err.message.includes('already exists') || err.message.includes('already registered')) {
         setUserExistsError(true);
         setError('An account with this email already exists. Please sign in instead.');
       } else if (err.message.includes('network') || err.message.includes('fetch')) {
@@ -136,6 +140,17 @@ const SignUp = () => {
     } catch (err) {
       setError('Failed to initiate Facebook sign up. Please try again.');
     }
+  };
+
+  const handleVerificationSuccess = (response) => {
+    // Store token and user data
+    if (response.token) {
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+    }
+
+    // Navigate to chat page
+    navigate('/chat');
   };
 
   return (
@@ -318,6 +333,14 @@ const SignUp = () => {
           </p>
         </div>
       </div>
+
+      {/* Email Verification Modal */}
+      <VerifyEmail
+        isOpen={showVerifyModal}
+        userEmail={userEmail}
+        onSuccess={handleVerificationSuccess}
+        onClose={() => setShowVerifyModal(false)}
+      />
     </>
   );
 };

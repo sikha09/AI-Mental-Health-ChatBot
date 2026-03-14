@@ -1,12 +1,10 @@
 /**
  * Application Constants
- * 
- * This file contains all constant values used throughout the application.
  */
 
 export const APP_NAME = 'AI-Mental Health ChatBot';
 
-export const API_BASE_URL = 'http://localhost:5000';
+export const API_BASE_URL = 'http://localhost:5001';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -16,6 +14,8 @@ export const API_ENDPOINTS = {
     SIGNUP: `${API_BASE_URL}/api/auth/signup`,
     LOGOUT: `${API_BASE_URL}/api/auth/logout`,
     PROFILE: `${API_BASE_URL}/api/auth/profile`,
+    VERIFY_EMAIL: `${API_BASE_URL}/api/auth/verify-email`,
+    RESEND_VERIFICATION: `${API_BASE_URL}/api/auth/resend-verification`,
   },
   CHAT: {
     SEND_MESSAGE: `${API_BASE_URL}/api/chat/message`,
@@ -34,4 +34,3 @@ export default {
   API_ENDPOINTS,
   STORAGE_KEYS,
 };
-

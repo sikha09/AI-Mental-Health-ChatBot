@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Sidebar from '../components/Sidebar/Sidebar';
-import ChatArea from '../components/ChatArea/ChatArea';
-import '../styles/ClaudePage.css';
+import Sidebar from "../components/Sidebar/Sidebar";
+import ChatArea from "../components/ChatArea/ChatArea";
+import "../styles/ClaudePage.css";
 
 const ClaudePage = ({ setIsLoggedIn }) => {
   const [messages, setMessages] = useState([]);
@@ -11,13 +11,16 @@ const ClaudePage = ({ setIsLoggedIn }) => {
     if (!text.trim()) return;
 
     // Add user message
-    setMessages(prev => [...prev, { sender: "You", text }]);
+    setMessages((prev) => [...prev, { sender: "You", text }]);
 
     // Simulate bot response
     setTimeout(() => {
-      setMessages(prev => [
+      setMessages((prev) => [
         ...prev,
-        { sender: "Chatbot", text: "Hello! I'm here to help you. How can I assist you today?" }
+        {
+          sender: "Chatbot",
+          text: "Hello! I'm here to help you. How can I assist you today?",
+        },
       ]);
     }, 500);
   };
