@@ -313,3 +313,18 @@
 .facebook-btn:hover:not(:disabled) {
   background: #0d65d9;
 }
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #9ca3af;
+}
+
+.close-btn:hover {
+  color: #fff;
+}

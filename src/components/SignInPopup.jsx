@@ -164,7 +164,6 @@ const SignInPopup = ({ isOpen, onClose }) => {
               <span className="field-error">{fieldErrors.password}</span>
             )}
           </div>
-
           <button type="submit" className="signin-btn" disabled={loading}>
             {loading ? (
               <>
@@ -175,7 +174,14 @@ const SignInPopup = ({ isOpen, onClose }) => {
               'Sign In'
             )}
           </button>
+
+          <div className="forgot-password-wrapper">
+            <Link to="/forgot-password" className="reset-link" onClick={onClose}>
+              Forgot your password?
+            </Link>
+          </div>
         </form>
+
 
         <div className="oauth-divider">
           <span>OR</span>
@@ -183,9 +189,6 @@ const SignInPopup = ({ isOpen, onClose }) => {
 
         <button onClick={handleGoogleSignIn} className="google-btn" disabled={loading}>
           Sign In with Google
-        </button>
-        <button onClick={handleFacebookSignIn} className="facebook-btn" disabled={loading}>
-          Sign In with Facebook
         </button>
 
         <p className="signup-text">

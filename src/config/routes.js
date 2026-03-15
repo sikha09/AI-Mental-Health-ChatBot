@@ -12,6 +12,8 @@ export const ROUTES = {
   TERMS: '/terms',
   PRIVACY: '/privacy',
   OAUTH_CALLBACK: '/auth/callback',
+  ADMIN_LOGIN: '/admin/login',
+  ADMIN_DASHBOARD: '/admin/*',
 };
 
 export default ROUTES;

@@ -1,0 +1,67 @@
+/* ============================
+   Stats Overview
+   ============================ */
+
+.stats-heading {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 16px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.stat-icon { font-size: 32px; flex-shrink: 0; }
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 500;
+}
+.stat-sublabel {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 3px;
+}
+
+/* Color accents */
+.stat-card--blue   { border-color: rgba(79,172,254,0.3); }
+.stat-card--green  { border-color: rgba(0,212,170,0.3); }
+.stat-card--red    { border-color: rgba(255,80,80,0.3); }
+.stat-card--purple { border-color: rgba(108,99,255,0.3); }
+.stat-card--orange { border-color: rgba(255,167,38,0.3); }
+.stat-card--teal   { border-color: rgba(0,188,212,0.3); }
+
+.stats-loading, .stats-error {
+  color: rgba(255,255,255,0.5);
+  padding: 40px;
+  text-align: center;
+  font-size: 15px;
+}
+.stats-error { color: #ff8080; }

@@ -325,3 +325,21 @@
     opacity: 1;
   }
 }
+
+.forgot-password-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.reset-link {
+  color: white;
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 400;
+}
+
+.reset-link:hover {
+  text-decoration: underline;
+}

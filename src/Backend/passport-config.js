@@ -1,6 +1,11 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const db = require('./db');
+const { sendOTPEmail } = require('./emailService');
+
+const generateOTP = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
 /**
  * Serialize user for session
@@ -58,52 +63,88 @@ passport.use(
                         }
 
                         if (existingUser.auth_provider === 'google') {
-                            const tokenQuery = `
-                              INSERT INTO oauth_tokens (user_id, provider, access_token, refresh_token, expires_at)
-                              VALUES (?, 'google', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
-                              ON DUPLICATE KEY UPDATE 
-                                access_token = VALUES(access_token),
-                                refresh_token = VALUES(refresh_token),
-                                expires_at = VALUES(expires_at)
-                            `;
+                            const processExistingGoogleUser = async () => {
+                                try {
+                                    if (!existingUser.is_verified) {
+                                        const otp = generateOTP();
+                                        const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+                                        
+                                        await new Promise((resolve, reject) => {
+                                            db.query(
+                                                'UPDATE users SET otp_code = ?, otp_expires_at = ? WHERE id = ?',
+                                                [otp, otpExpires, existingUser.id],
+                                                (err) => err ? reject(err) : resolve()
+                                            );
+                                        });
+                                        
+                                        await sendOTPEmail(email, otp, existingUser.name);
+                                    }
 
-                            db.query(tokenQuery, [existingUser.id, accessToken, refreshToken]);
-                            return done(null, existingUser);
+                                    const tokenQuery = `
+                                      INSERT INTO oauth_tokens (user_id, provider, access_token, refresh_token, expires_at)
+                                      VALUES (?, 'google', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
+                                      ON DUPLICATE KEY UPDATE 
+                                        access_token = VALUES(access_token),
+                                        refresh_token = VALUES(refresh_token),
+                                        expires_at = VALUES(expires_at)
+                                    `;
+
+                                    db.query(tokenQuery, [existingUser.id, accessToken, refreshToken]);
+                                    return done(null, existingUser);
+                                } catch (error) {
+                                    return done(error);
+                                }
+                            };
+                            
+                            processExistingGoogleUser();
+                            return;
                         }
                     }
 
                     // ------------------------
                     // New user
                     // ------------------------
-                    const insertQuery = `
-                      INSERT INTO users (email, name, auth_provider, provider_id, avatar_url, is_verified)
-                      VALUES (?, ?, 'google', ?, ?, TRUE)
-                    `;
+                    const processNewGoogleUser = async () => {
+                        try {
+                            const otp = generateOTP();
+                            const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+                            
+                            const insertQuery = `
+                              INSERT INTO users (email, name, auth_provider, provider_id, avatar_url, is_verified, otp_code, otp_expires_at)
+                              VALUES (?, ?, 'google', ?, ?, FALSE, ?, ?)
+                            `;
 
-                    db.query(insertQuery, [email, name, providerId, avatarUrl], (err, result) => {
-                        if (err) return done(err);
+                            db.query(insertQuery, [email, name, providerId, avatarUrl, otp, otpExpires], async (err, result) => {
+                                if (err) return done(err);
 
-                        const userId = result.insertId;
+                                const userId = result.insertId;
 
-                        const tokenQuery = `
-                            INSERT INTO oauth_tokens (user_id, provider, access_token, refresh_token, expires_at)
-                            VALUES (?, 'google', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
-                        `;
+                                await sendOTPEmail(email, otp, name);
 
-                        db.query(tokenQuery, [userId, accessToken, refreshToken]);
+                                const tokenQuery = `
+                                    INSERT INTO oauth_tokens (user_id, provider, access_token, refresh_token, expires_at)
+                                    VALUES (?, 'google', ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
+                                `;
 
-                        const newUser = {
-                            id: userId,
-                            email,
-                            name,
-                            auth_provider: 'google',
-                            provider_id: providerId,
-                            avatar_url: avatarUrl,
-                            is_verified: true
-                        };
+                                db.query(tokenQuery, [userId, accessToken, refreshToken]);
 
-                        return done(null, newUser);
-                    });
+                                const newUser = {
+                                    id: userId,
+                                    email,
+                                    name,
+                                    auth_provider: 'google',
+                                    provider_id: providerId,
+                                    avatar_url: avatarUrl,
+                                    is_verified: false
+                                };
+
+                                return done(null, newUser);
+                            });
+                        } catch (error) {
+                            return done(error);
+                        }
+                    };
+                    processNewGoogleUser();
                 });
 
             } catch (error) {

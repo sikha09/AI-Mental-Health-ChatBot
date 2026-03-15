@@ -1,0 +1,88 @@
+/* ============================
+   User Detail Modal
+   ============================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fade-in 0.2s ease;
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-card {
+  background: #13132a;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+  animation: pop-in 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes pop-in {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  border-radius: 6px;
+  width: 28px; height: 28px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: rgba(255,80,80,0.2); color: #ff8080; }
+
+.modal-avatar { margin-bottom: 12px; }
+.modal-avatar-img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; }
+.modal-avatar-placeholder {
+  width: 64px; height: 64px;
+  background: linear-gradient(135deg, #6c63ff, #4facfe);
+  border-radius: 50%;
+  font-size: 26px; font-weight: 700; color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+.modal-name {
+  font-size: 20px; font-weight: 700; color: #fff; margin: 0 0 4px;
+}
+.modal-email {
+  font-size: 13px; color: rgba(255,255,255,0.45); margin: 0 0 24px;
+}
+
+.modal-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+.modal-table tr { border-top: 1px solid rgba(255,255,255,0.06); }
+.modal-label {
+  padding: 9px 0;
+  color: rgba(255,255,255,0.4);
+  font-weight: 500;
+  white-space: nowrap;
+  padding-right: 16px;
+  width: 110px;
+}
+.modal-value {
+  padding: 9px 0;
+  color: rgba(255,255,255,0.8);
+  font-weight: 400;
+}

@@ -5,6 +5,7 @@ require('dotenv').config();
 const passport = require("./passport-config");
 const db = require("./db");
 const { signup, login, getProfile, verifyToken, generateToken, verifyEmail, resendVerification } = require("./auth");
+const { verifyAdmin, adminLogin, getAdminStats, getAllUsers, getUserById, banUser, unbanUser, deleteUser } = require("./admin");
 
 const app = express();
 
@@ -97,6 +98,10 @@ app.get("/auth/google/callback",
       return res.redirect(`${process.env.FRONTEND_URL}/signup?error=user_already_exists`);
     }
 
+    if (!req.user.is_verified) {
+      return res.redirect(`${process.env.FRONTEND_URL}/signup?verify=true&email=${encodeURIComponent(req.user.email)}`);
+    }
+
     // Generate JWT token for the authenticated user
     const token = generateToken(req.user.id);
 
@@ -105,6 +110,23 @@ app.get("/auth/google/callback",
   }
 );
 
+
+// ============================================
+// Admin Routes
+// ============================================
+
+// Admin login (no auth required)
+app.post("/api/admin/login", adminLogin);
+
+// Admin stats
+app.get("/api/admin/stats", verifyAdmin, getAdminStats);
+
+// Admin user management
+app.get("/api/admin/users", verifyAdmin, getAllUsers);
+app.get("/api/admin/users/:id", verifyAdmin, getUserById);
+app.put("/api/admin/users/:id/ban", verifyAdmin, banUser);
+app.put("/api/admin/users/:id/unban", verifyAdmin, unbanUser);
+app.delete("/api/admin/users/:id", verifyAdmin, deleteUser);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -143,6 +165,13 @@ db.getConnection((err, connection) => {
     console.log(`  POST /api/auth/resend-verification - Resend OTP`);
     console.log(`  GET  /api/auth/profile - Get user profile`);
     console.log(`  GET  /auth/google - Google OAuth`);
+    console.log(`--- Admin ---`);
+    console.log(`  POST /api/admin/login - Admin login`);
+    console.log(`  GET  /api/admin/stats - Dashboard stats`);
+    console.log(`  GET  /api/admin/users - List users`);
+    console.log(`  PUT  /api/admin/users/:id/ban - Ban user`);
+    console.log(`  PUT  /api/admin/users/:id/unban - Unban user`);
+    console.log(`  DELETE /api/admin/users/:id - Delete user`);
     console.log('\n');
   });
 });
