@@ -183,7 +183,7 @@
 /* Toast */
 .admin-toast {
   position: fixed;
-  bottom: 28px;
+  top: 28px;
   right: 28px;
   background: rgba(20,20,40,0.95);
   border-radius: 12px;
@@ -192,12 +192,12 @@
   font-weight: 500;
   border: 1px solid rgba(255,255,255,0.1);
   z-index: 9999;
-  animation: slide-in 0.3s ease;
+  animation: slide-in-top 0.3s ease;
   box-shadow: 0 8px 30px rgba(0,0,0,0.4);
 }
 .admin-toast--success { border-color: rgba(0,200,120,0.3); color: #00e090; }
 .admin-toast--error   { border-color: rgba(255,80,80,0.3); color: #ff8080; }
-@keyframes slide-in {
-  from { transform: translateY(20px); opacity: 0; }
+@keyframes slide-in-top {
+  from { transform: translateY(-20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }

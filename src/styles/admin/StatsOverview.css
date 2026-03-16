@@ -65,3 +65,20 @@
   font-size: 15px;
 }
 .stats-error { color: #ff8080; }
+
+.stats-graph-section {
+  margin-top: 32px;
+}
+.stats-subheading {
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 16px;
+}
+.stats-graph-wrapper {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 24px 20px 20px 0;
+  height: 300px;
+}

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { signUp, signInWithGoogle, signInWithFacebook } from '../services/authService';
+import { signUp, signInWithGoogle } from '../services/authService';
 import VerifyEmail from '../components/VerifyEmail';
 import "../styles/SignUp.css";
 import '../styles/App.css';
@@ -99,7 +99,7 @@ const SignUp = () => {
 
   const handleGoogleSignUp = () => {
     try { signInWithGoogle(); }
-    catch (err) { setError('Failed to initiate Google sign up. Please try again.'); }
+    catch { setError('Failed to initiate Google sign up. Please try again.'); }
   };
 
   const handleVerificationSuccess = (response) => {

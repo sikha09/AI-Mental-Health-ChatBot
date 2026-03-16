@@ -129,7 +129,7 @@ app.put("/api/admin/users/:id/unban", verifyAdmin, unbanUser);
 app.delete("/api/admin/users/:id", verifyAdmin, deleteUser);
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error('Server error:', err);
   res.status(500).json({
     success: false,

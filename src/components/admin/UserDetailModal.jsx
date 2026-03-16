@@ -12,7 +12,6 @@ const UserDetailModal = ({ user, onClose }) => {
     { label: 'Auth Provider', value: user.auth_provider },
     { label: 'Verified', value: user.is_verified ? 'Yes' : 'No' },
     { label: 'Admin', value: user.is_admin ? 'Yes' : 'No' },
-    { label: 'Banned', value: user.is_banned ? 'Yes' : 'No' },
     { label: 'Joined', value: formatDate(user.created_at) },
     { label: 'Last Updated', value: formatDate(user.updated_at) },
   ];

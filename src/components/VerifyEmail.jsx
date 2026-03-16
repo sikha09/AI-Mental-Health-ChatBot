@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../styles/VerifyEmail.css';
 import { verifyEmail, resendVerification } from '../services/authService';
 
-const VerifyEmail = ({ isOpen, userEmail, onSuccess, onClose }) => {
+const VerifyEmail = ({ isOpen, userEmail, onSuccess }) => {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -10,7 +10,7 @@ const VerifyEmail = ({ isOpen, userEmail, onSuccess, onClose }) => {
     const [resendCountdown, setResendCountdown] = useState(0);
     const [successMessage, setSuccessMessage] = useState('');
 
-    // ✅ FIXED: useEffect MUST come before any conditional returns (Rules of Hooks)
+    // FIXED: useEffect MUST come before any conditional returns (Rules of Hooks)
     useEffect(() => {
         if (resendCountdown > 0) {
             const timer = setTimeout(() => {
@@ -20,7 +20,7 @@ const VerifyEmail = ({ isOpen, userEmail, onSuccess, onClose }) => {
         }
     }, [resendCountdown]);
 
-    // ✅ Conditional return is now AFTER all hooks
+    // Conditional return is now AFTER all hooks
     if (!isOpen) return null;
 
     const handleChange = (element, index) => {

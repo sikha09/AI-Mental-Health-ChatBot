@@ -26,7 +26,7 @@ const verifyAdmin = (req, res, next) => {
     }
     req.admin = decoded;
     next();
-  } catch (error) {
+  } catch (_error) {
     return res.status(401).json({ success: false, message: 'Invalid or expired admin token' });
   }
 };
@@ -104,6 +104,7 @@ const getAdminStats = (req, res) => {
     local: "SELECT COUNT(*) AS count FROM users WHERE auth_provider = 'local'",
     newThisWeek: "SELECT COUNT(*) AS count FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)",
     newToday: "SELECT COUNT(*) AS count FROM users WHERE DATE(created_at) = CURDATE()",
+    usersPerDay: "SELECT DATE(created_at) as date, COUNT(*) as count FROM users WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(created_at) ORDER BY date ASC",
   };
 
   const results = {};
@@ -116,7 +117,11 @@ const getAdminStats = (req, res) => {
         console.error(`Stats query error (${key}):`, err);
         results[key] = 0;
       } else {
-        results[key] = rows[0].count;
+        if (key === 'usersPerDay') {
+          results[key] = rows; // This returns an array of {date, count} objects
+        } else {
+          results[key] = rows[0].count; // This returns a single count
+        }
       }
       completed++;
       if (completed === keys.length) {
@@ -238,7 +243,11 @@ const deleteUser = (req, res) => {
 
   db.query('SELECT is_admin FROM users WHERE id = ?', [id], (err, rows) => {
     if (err || rows.length === 0) return res.status(404).json({ success: false, message: 'User not found' });
-    if (rows[0].is_admin) return res.status(403).json({ success: false, message: 'Cannot delete an admin user' });
+    
+    // Allow deleting an admin, but NOT the currently logged in admin (yourself)
+    if (rows[0].is_admin && parseInt(id) === req.admin.id) {
+      return res.status(403).json({ success: false, message: 'You cannot delete yourself' });
+    }
 
     db.query('DELETE FROM users WHERE id = ?', [id], (err2) => {
       if (err2) return res.status(500).json({ success: false, message: 'Server error' });

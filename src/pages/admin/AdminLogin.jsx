@@ -51,8 +51,8 @@ const AdminLogin = () => {
       <div className="orb orb-3" />
 
       <div className="admin-login-card">
-        <div className="admin-login-logo">🧠</div>
-        <h1 className="admin-login-title">MindBot Admin</h1>
+        <div className="admin-login-logo"></div>
+        <h1 className="admin-login-title">Admin Dashboard</h1>
         <p className="admin-login-subtitle">Sign in to manage your platform</p>
 
         <form id="admin-login-form" className="admin-login-form" onSubmit={handleSubmit}>

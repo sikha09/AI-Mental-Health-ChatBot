@@ -53,28 +53,6 @@ const UsersTable = () => {
     fetchUsers(1);
   }, [fetchUsers]);
 
-  const handleBan = async (user) => {
-    setActionLoading(user.id + '-ban');
-    const action = user.is_banned ? 'unban' : 'ban';
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/admin/users/${user.id}/${action}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${adminToken}` },
-      });
-      const data = await res.json();
-      if (data.success) {
-        showToast(data.message);
-        fetchUsers(pagination.page);
-      } else {
-        showToast(data.message, 'error');
-      }
-    } catch {
-      showToast('Action failed', 'error');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
   const handleDelete = async (user) => {
     if (!window.confirm(`Delete user "${user.name}" (${user.email})?`)) return;
     setActionLoading(user.id + '-delete');
@@ -97,7 +75,8 @@ const UsersTable = () => {
     }
   };
 
-  const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const formatDate = (d) =>
+    new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
   return (
     <div className="users-section">
@@ -139,66 +118,55 @@ const UsersTable = () => {
             </thead>
             <tbody>
               {users.length === 0 ? (
-                <tr><td colSpan={6} className="no-users">No users found</td></tr>
-              ) : users.map((user) => (
-                <tr key={user.id} className={user.is_banned ? 'row-banned' : ''}>
-                  <td className="col-id">{user.id}</td>
-                  <td className="col-user">
-                    <div className="user-avatar-mini">{user.name?.[0]?.toUpperCase() || '?'}</div>
-                    <div>
-                      <div className="user-name-cell">
-                        {user.name}
-                        {user.is_admin && <span className="badge badge-admin">Admin</span>}
+                <tr>
+                  <td colSpan={6} className="no-users">No users found</td>
+                </tr>
+              ) : (
+                users.map((user) => (
+                  <tr key={user.id}>
+                    <td className="col-id">{user.id}</td>
+                    <td className="col-user">
+                      <div className="user-avatar-mini">{user.name?.[0]?.toUpperCase() || '?'}</div>
+                      <div>
+                        <div className="user-name-cell">
+                          {user.name}
+                          {user.is_admin ? <span className="badge badge-admin">Admin</span> : null}
+                        </div>
+                        <div className="user-email-cell">{user.email}</div>
                       </div>
-                      <div className="user-email-cell">{user.email}</div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`badge badge-provider badge-${user.auth_provider}`}>
-                      {user.auth_provider === 'google' ? '' : ''} {user.auth_provider}
-                    </span>
-                  </td>
-                  <td>
-                    {user.is_banned
-                      ? <span className="badge badge-banned">Banned</span>
-                      : user.is_verified
+                    </td>
+                    <td>
+                      <span className={`badge badge-provider badge-${user.auth_provider}`}>
+                        {user.auth_provider}
+                      </span>
+                    </td>
+                    <td>
+                      {user.is_verified
                         ? <span className="badge badge-verified">Verified</span>
                         : <span className="badge badge-unverified">Unverified</span>}
-                  </td>
-                  <td className="col-date">{formatDate(user.created_at)}</td>
-                  <td className="col-actions">
-                    <button
-                      className="action-btn action-btn--view"
-                      title="View details"
-                      onClick={() => setSelectedUser(user)}
-                    >👁️</button>
-                    {!user.is_admin && (
-                      <>
-                        <button
-                          className={`action-btn ${user.is_banned ? 'action-btn--unban' : 'action-btn--ban'}`}
-                          title={user.is_banned ? 'Unban' : 'Ban'}
-                          disabled={actionLoading === user.id + '-ban'}
-                          onClick={() => handleBan(user)}
-                        >
-                          {user.is_banned ? 'yes' : 'no'}
-                        </button>
-                        <button
-                          className="action-btn action-btn--delete"
-                          title="Delete"
-                          disabled={actionLoading === user.id + '-delete'}
-                          onClick={() => handleDelete(user)}
-                        >🗑️</button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="col-date">{formatDate(user.created_at)}</td>
+                    <td className="col-actions">
+                      <button
+                        className="action-btn action-btn--view"
+                        title="View details"
+                        onClick={() => setSelectedUser(user)}
+                      >👁️</button>
+                      <button
+                        className="action-btn action-btn--delete"
+                        title="Delete"
+                        disabled={actionLoading === user.id + '-delete'}
+                        onClick={() => handleDelete(user)}
+                      >🗑️</button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       )}
 
-      {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="pagination">
           <button

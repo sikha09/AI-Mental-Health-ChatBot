@@ -8,7 +8,7 @@ require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const db = require('./db');
 
-// ✏️  Change these to your preferred admin credentials
+// Change these to your preferred admin credentials
 const ADMIN_EMAIL = 'admin@chatbot.com';
 const ADMIN_PASSWORD = 'admin123';
 const ADMIN_NAME = 'Admin';

@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar/Sidebar";
 import ChatArea from "../components/ChatArea/ChatArea";
 import "../styles/ClaudePage.css";
 
-const ClaudePage = ({ setIsLoggedIn }) => {
+const ClaudePage = () => {
   const [messages, setMessages] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { signIn, signInWithGoogle, signInWithFacebook } from '../services/authService';
+import { signIn, signInWithGoogle } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import '../styles/SignInPopup.css';
 
@@ -106,18 +106,12 @@ const SignInPopup = ({ isOpen, onClose }) => {
   const handleGoogleSignIn = () => {
     try {
       signInWithGoogle();
-    } catch (err) {
+    } catch {
       setError('Failed to initiate Google sign in. Please try again.');
     }
   };
 
-  const handleFacebookSignIn = () => {
-    try {
-      signInWithFacebook();
-    } catch (err) {
-      setError('Failed to initiate Facebook sign in. Please try again.');
-    }
-  };
+
 
   return (
     <div className="signin-popup-overlay" onClick={onClose}>

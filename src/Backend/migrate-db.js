@@ -63,7 +63,7 @@ connection.connect((err) => {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `;
 
-    connection.query(sql, (err, results) => {
+    connection.query(sql, (err, _results) => {
         if (err) {
             console.error('Migration failed:', err.message);
             connection.end();

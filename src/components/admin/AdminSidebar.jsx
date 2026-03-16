@@ -22,7 +22,7 @@ const AdminSidebar = () => {
       <div className="sidebar-brand">
         <span className="sidebar-logo"></span>
         <div>
-          <div className="sidebar-title">MentalHealthChatbot</div>
+          <div className="sidebar-title">MentalHealth</div>
           <div className="sidebar-subtitle">Admin Panel</div>
         </div>
       </div>

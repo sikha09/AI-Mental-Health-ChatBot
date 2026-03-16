@@ -101,6 +101,7 @@ const signup = async (req, res) => {
           });
         }
 
+        // eslint-disable-next-line no-unused-vars
         const userId = result.insertId;
 
         // Send OTP via email
@@ -200,7 +201,7 @@ const login = async (req, res) => {
         const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
         const updateQuery = 'UPDATE users SET otp_code = ?, otp_expires_at = ? WHERE id = ?';
-        db.query(updateQuery, [otp, otpExpires, user.id], (err, result) => {
+        db.query(updateQuery, [otp, otpExpires, user.id], (err, _result) => {
           if (err) {
             console.error('Database error:', err);
             return res.status(500).json({
@@ -323,7 +324,7 @@ const verifyEmail = async (req, res) => {
 
       // Verify user and clear OTP
       const updateQuery = 'UPDATE users SET is_verified = TRUE, otp_code = NULL, otp_expires_at = NULL WHERE id = ?';
-      db.query(updateQuery, [user.id], (err, result) => {
+      db.query(updateQuery, [user.id], (err, _result) => {
         if (err) {
           console.error('Database error:', err);
           return res.status(500).json({
@@ -406,7 +407,7 @@ const resendVerification = async (req, res) => {
       const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
       const updateQuery = 'UPDATE users SET otp_code = ?, otp_expires_at = ? WHERE id = ?';
-      db.query(updateQuery, [otp, otpExpires, user.id], (err, result) => {
+      db.query(updateQuery, [otp, otpExpires, user.id], (err, _result) => {
         if (err) {
           console.error('Database error:', err);
           return res.status(500).json({
@@ -495,7 +496,7 @@ const verifyToken = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
-  } catch (error) {
+  } catch (_error) {
     return res.status(401).json({
       success: false,
       message: 'Invalid or expired token'
