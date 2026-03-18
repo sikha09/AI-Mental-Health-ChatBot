@@ -455,7 +455,7 @@ const resendVerification = async (req, res) => {
 const getProfile = (req, res) => {
   const userId = req.user.id;
 
-  const query = 'SELECT id, email, name, auth_provider, avatar_url, created_at FROM users WHERE id = ?';
+  const query = 'SELECT id, email, name, auth_provider, avatar_url, checkin_time, checkin_enabled, created_at FROM users WHERE id = ?';
   db.query(query, [userId], (err, results) => {
     if (err) {
       console.error('Database error:', err);
@@ -475,6 +475,38 @@ const getProfile = (req, res) => {
     res.json({
       success: true,
       user: results[0]
+    });
+  });
+};
+
+/**
+ * Update user check-in settings
+ */
+const updateCheckinSettings = (req, res) => {
+  const userId = req.user.id;
+  const { checkinTime, checkinEnabled } = req.body;
+
+  // Validate time format (HH:MM or empty)
+  if (checkinTime && !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(checkinTime)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid time format. Please use HH:MM'
+    });
+  }
+
+  const query = 'UPDATE users SET checkin_time = ?, checkin_enabled = ? WHERE id = ?';
+  db.query(query, [checkinTime || null, checkinEnabled ? true : false, userId], (err, result) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({
+        success: false,
+        message: 'Server error while updating checkin settings'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Check-in settings updated successfully'
     });
   });
 };
@@ -513,5 +545,6 @@ module.exports = {
   hashPassword,
   comparePassword,
   verifyEmail,
-  resendVerification
+  resendVerification,
+  updateCheckinSettings
 };

@@ -4,7 +4,7 @@ const session = require("express-session");
 require('dotenv').config();
 const passport = require("./passport-config");
 const db = require("./db");
-const { signup, login, getProfile, verifyToken, generateToken, verifyEmail, resendVerification } = require("./auth");
+const { signup, login, getProfile, verifyToken, generateToken, verifyEmail, resendVerification, updateCheckinSettings } = require("./auth");
 const { verifyAdmin, adminLogin, getAdminStats, getAllUsers, getUserById, banUser, unbanUser, deleteUser } = require("./admin");
 
 const app = express();
@@ -65,6 +65,9 @@ app.post("/api/auth/resend-verification", resendVerification);
 
 // Get user profile (protected route)
 app.get("/api/auth/profile", verifyToken, getProfile);
+
+// Update user check-in settings
+app.put("/api/auth/profile/checkin", verifyToken, updateCheckinSettings);
 
 // Logout route
 app.post("/api/auth/logout", (req, res) => {

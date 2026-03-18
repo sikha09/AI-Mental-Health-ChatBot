@@ -17,6 +17,8 @@ CREATE TABLE users (
     otp_code VARCHAR(6) NULL,
     otp_expires_at DATETIME NULL,
     is_verified BOOLEAN DEFAULT FALSE,
+    checkin_time VARCHAR(5) NULL,
+    checkin_enabled BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_email (email),
