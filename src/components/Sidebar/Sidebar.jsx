@@ -1,7 +1,7 @@
 import React from 'react';
 import './Sidebar.css';
 
-const Sidebar = ({ isOpen, onNewChat }) => {
+const Sidebar = ({ isOpen, onNewChat, onOpenSettings }) => {
     return (
         <div className={`sidebar ${isOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
@@ -30,7 +30,7 @@ const Sidebar = ({ isOpen, onNewChat }) => {
             </div>
 
             <div className="sidebar-footer">
-                <button className="user-profile-btn">
+                <button className="user-profile-btn" onClick={onOpenSettings}>
                     <div className="avatar">U</div>
                     <div className="user-info">
                         <span className="name">User Name</span>
