@@ -1,3 +1,4 @@
+/* ── Chat Area Container ─────────────────────────────────────── */
 .chat-area {
     flex: 1;
     display: flex;
@@ -6,8 +7,10 @@
     background-color: #1a1d2e;
     color: #ececf1;
     position: relative;
+    overflow: hidden;
 }
 
+/* ── Welcome Screen ──────────────────────────────────────────── */
 .welcome-screen {
     flex: 1;
     display: flex;
@@ -19,192 +22,236 @@
 }
 
 .welcome-screen h1 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    font-weight: 600;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-size: 2.4rem;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #a78bfa 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 .welcome-screen p {
-    color: #a0a0b0;
+    color: #8e8ea0;
+    font-size: 1rem;
+    margin-bottom: 3rem;
 }
 
+/* ── Suggestion Cards ────────────────────────────────────────── */
 .suggestion-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
-    margin-top: 3rem;
     width: 100%;
-    max-width: 800px;
+    max-width: 760px;
 }
 
 .suggestion-cards button {
-    background: #16182a;
-    border: 1px solid #3a3d5c;
-    border-radius: 12px;
-    padding: 1.5rem;
+    background: rgba(26, 29, 51, 0.8);
+    border: 1px solid #2e3155;
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
     color: #ececf1;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.4rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
 }
 
 .suggestion-cards button:hover {
-    background-color: #1f2237;
+    background: rgba(102, 126, 234, 0.12);
     border-color: #667eea;
     transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
 }
 
 .suggestion-cards button span {
-    font-size: 0.9rem;
-    color: #8e8ea0;
+    font-size: 0.82rem;
+    color: #6b6d90;
+    font-weight: 400;
 }
 
+/* ── Messages Container ──────────────────────────────────────── */
 .messages-container {
     flex: 1;
     overflow-y: auto;
-    padding: 2rem 0;
-    padding-bottom: 150px;
+    padding: 1.5rem 0;
+    padding-bottom: 170px;
 }
 
+/* ── Message Row ─────────────────────────────────────────────── */
 .message-wrapper {
-    padding: 1.5rem;
     display: flex;
-    gap: 1.5rem;
-    border-bottom: 1px solid rgba(42, 45, 71, 0.5);
-    justify-content: center;
+    gap: 1rem;
+    padding: 1.2rem max(1.5rem, calc(50% - 380px));
+    border-bottom: 1px solid rgba(42, 45, 71, 0.4);
+    transition: background 0.15s;
 }
 
 .message-wrapper.bot {
-    background-color: #16182a;
+    background-color: rgba(22, 24, 42, 0.7);
 }
 
 .message-wrapper.user {
-    background-color: #1a1d2e;
+    background-color: transparent;
 }
 
+.message-wrapper:hover {
+    background-color: rgba(42, 45, 71, 0.3);
+}
+
+/* ── Avatar ──────────────────────────────────────────────────── */
 .message-avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 2px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .message-wrapper.user .message-avatar {
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    box-shadow: 0 2px 8px rgba(240, 147, 251, 0.3);
 }
 
+/* ── Message Content ─────────────────────────────────────────── */
 .message-content {
     flex: 1;
-    max-width: 800px;
+    min-width: 0;
 }
 
 .sender-name {
     font-weight: 600;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.88rem;
+    letter-spacing: 0.02em;
+}
+
+.message-wrapper.user .sender-name {
+    color: #c084fc;
+}
+
+.message-wrapper.bot .sender-name {
+    color: #818cf8;
 }
 
 .message-text {
-    line-height: 1.6;
+    line-height: 1.7;
+    font-size: 0.97rem;
+    color: #dde2f0;
+    word-wrap: break-word;
 }
 
+/* ── Input Container ─────────────────────────────────────────── */
 .input-container {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(180deg, rgba(26, 29, 46, 0), #1a1d2e 20%);
-    padding: 2rem;
+    background: linear-gradient(180deg, transparent 0%, #1a1d2e 35%);
+    padding: 1.5rem max(1.5rem, calc(50% - 390px));
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
 }
 
+/* ── Input Box ───────────────────────────────────────────────── */
 .input-box {
     width: 100%;
-    max-width: 800px;
     position: relative;
-    background: #16182a;
-    border-radius: 12px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-    border: 1px solid #3a3d5c;
+    background: #14162a;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    border: 1px solid #2e3155;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-box:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 4px 24px rgba(102, 126, 234, 0.15);
 }
 
 .input-box textarea {
     width: 100%;
     background: transparent;
     border: none;
-    color: white;
-    padding: 1rem 3rem 1rem 1rem;
+    outline: none;
+    color: #ececf1;
+    padding: 1rem 3.5rem 1rem 1.25rem;
     resize: none;
     font-family: inherit;
-    height: 52px;
+    font-size: 0.97rem;
+    height: 54px;
+    line-height: 1.5;
+    box-sizing: border-box;
 }
 
 .input-box textarea::placeholder {
-    color: #6b6d80;
+    color: #4a4d6b;
 }
 
+/* ── Send Button ─────────────────────────────────────────────── */
 .send-btn {
     position: absolute;
-    right: 12px;
-    bottom: 12px;
+    right: 10px;
+    bottom: 10px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    border-radius: 6px;
-    padding: 8px 12px;
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
-    font-weight: 600;
+    font-size: 1rem;
 }
 
-.send-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+.send-btn:hover:not(:disabled) {
+    transform: scale(1.08);
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.5);
 }
 
 .send-btn:disabled {
-    opacity: 0.4;
+    opacity: 0.3;
     cursor: not-allowed;
-    transform: scale(1);
+    transform: none;
 }
 
+/* ── Disclaimer ──────────────────────────────────────────────── */
 .disclaimer {
-    margin-top: 10px;
-    font-size: 0.75rem;
-    color: #6b6d80;
+    margin-top: 8px;
+    font-size: 0.73rem;
+    color: #4a4d6b;
+    text-align: center;
 }
 
-/* Scrollbar styling */
-.messages-container::-webkit-scrollbar,
-.sidebar-history::-webkit-scrollbar {
-    width: 8px;
+/* ── Scrollbar ───────────────────────────────────────────────── */
+.messages-container::-webkit-scrollbar {
+    width: 6px;
 }
 
-.messages-container::-webkit-scrollbar-track,
-.sidebar-history::-webkit-scrollbar-track {
-    background: #16182a;
+.messages-container::-webkit-scrollbar-track {
+    background: transparent;
 }
 
-.messages-container::-webkit-scrollbar-thumb,
-.sidebar-history::-webkit-scrollbar-thumb {
-    background: #3a3d5c;
+.messages-container::-webkit-scrollbar-thumb {
+    background: #2e3155;
     border-radius: 4px;
 }
 
-.messages-container::-webkit-scrollbar-thumb:hover,
-.sidebar-history::-webkit-scrollbar-thumb:hover {
-    background: #4a4d6c;
+.messages-container::-webkit-scrollbar-thumb:hover {
+    background: #4a4d80;
 }

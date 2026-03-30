@@ -22,20 +22,26 @@ const StatsOverview = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { adminToken } = useAdminAuth();
+  const { adminToken, handleAdminAuthError } = useAdminAuth();
 
   useEffect(() => {
+    if (!adminToken) return;
+
     fetch(`${BACKEND_URL}/api/admin/stats`, {
       headers: { Authorization: `Bearer ${adminToken}` },
     })
-      .then((r) => r.json())
+      .then((res) => {
+        if (handleAdminAuthError(res)) return;
+        return res.json();
+      })
       .then((data) => {
+        if (!data) return; // Already handled by handleAdminAuthError
         if (data.success) setStats(data.stats);
-        else setError('Failed to load stats');
+        else setError(data.message || 'Failed to load stats');
       })
       .catch(() => setError('Could not connect to server'))
       .finally(() => setLoading(false));
-  }, [adminToken]);
+  }, [adminToken, handleAdminAuthError]);
 
   // Helper to fill missing days with 0 counts over the last 7 days
   const chartData = useMemo(() => {

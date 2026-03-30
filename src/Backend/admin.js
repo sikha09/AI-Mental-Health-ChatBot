@@ -15,19 +15,28 @@ const generateAdminToken = (userId) => {
  * Middleware: Verify admin JWT
  */
 const verifyAdmin = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.error('[ADMIN] Unauthorized: No token provided');
     return res.status(401).json({ success: false, message: 'No admin token provided' });
   }
+
+  const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (!decoded.isAdmin) {
+      console.warn(`[ADMIN] Forbidden: User ID ${decoded.id} attempted admin access without isAdmin flag`);
       return res.status(403).json({ success: false, message: 'Admin access required' });
     }
     req.admin = decoded;
     next();
-  } catch (_error) {
-    return res.status(401).json({ success: false, message: 'Invalid or expired admin token' });
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      console.log('[ADMIN] Unauthorized: Admin token expired');
+      return res.status(401).json({ success: false, message: 'Admin token expired. Please login again.' });
+    }
+    console.error('[ADMIN] Unauthorized: Invalid admin token', err.message);
+    return res.status(401).json({ success: false, message: 'Invalid admin token. Please login again.' });
   }
 };
 

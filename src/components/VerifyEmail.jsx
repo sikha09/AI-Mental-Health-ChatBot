@@ -106,13 +106,13 @@ const VerifyEmail = ({ isOpen, userEmail, onSuccess }) => {
 
                 {error && (
                     <div className="error-message">
-                        <span>⚠️</span> {error}
+                        <span>error</span> {error}
                     </div>
                 )}
 
                 {successMessage && (
                     <div className="success-message">
-                        <span>✅</span> {successMessage}
+                        <span>success</span> {successMessage}
                     </div>
                 )}
 

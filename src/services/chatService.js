@@ -1,57 +1,46 @@
-/**
- * Chat Service
- * 
- * Handles all chat-related API calls and logic.
- */
+import { COLAB_API_URL } from "../config/constants";
 
-import { API_ENDPOINTS } from '../config/constants';
-
-/**
- * Send chat message
- * @param {string} message - User message
- * @returns {Promise<object>} Bot response
- */
-export const sendMessage = async (message) => {
+// ── Send message to Colab and get response ─────────────────────────
+export const sendMessage = async (userMessage, history = []) => {
   try {
-    // TODO: Replace with actual API call
-    const response = await fetch(API_ENDPOINTS.CHAT.SEND_MESSAGE, {
-      method: 'POST',
+    const response = await fetch(`${COLAB_API_URL}/chat`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({
+        message: userMessage,
+        history: history,
+      }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to send message');
+      throw new Error(`API error: ${response.status}`);
     }
 
     const data = await response.json();
+    // Returns: { response: "...", emotion: "Anxiety", history: [...] }
     return data;
+
   } catch (error) {
-    console.error('Send message error:', error);
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error(
+        "Cannot reach the AI model. Make sure Colab is running and the ngrok URL is updated in constants.js"
+      );
+    }
     throw error;
   }
 };
 
-/**
- * Get chat history
- * @returns {Promise<array>} Chat history
- */
-export const getChatHistory = async () => {
+// ── Check if Colab API is alive ────────────────────────────────────
+export const checkConnection = async () => {
   try {
-    // TODO: Replace with actual API call
-    const response = await fetch(API_ENDPOINTS.CHAT.GET_HISTORY);
-
-    if (!response.ok) {
-      throw new Error('Failed to get chat history');
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Get chat history error:', error);
-    throw error;
+    const response = await fetch(`${COLAB_API_URL}/health`, {
+      method: "GET",
+      signal: AbortSignal.timeout(8000), // 8 second timeout
+    });
+    return response.ok;
+  } catch {
+    return false;
   }
 };
-

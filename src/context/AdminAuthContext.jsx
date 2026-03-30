@@ -23,10 +23,29 @@ export const AdminAuthProvider = ({ children }) => {
     setAdminUser(null);
   };
 
+  /**
+   * Helper to handle 401 Unauthorized or 403 Forbidden from Admin APIs
+   */
+  const handleAdminAuthError = (res) => {
+    if (res.status === 401 || res.status === 403) {
+      console.warn(`[ADMIN] Auth error ${res.status}: Logging out...`);
+      adminLogout();
+      return true;
+    }
+    return false;
+  };
+
   const isAdminAuthenticated = !!adminToken;
 
   return (
-    <AdminAuthContext.Provider value={{ adminToken, adminUser, adminLogin, adminLogout, isAdminAuthenticated }}>
+    <AdminAuthContext.Provider value={{ 
+      adminToken, 
+      adminUser, 
+      adminLogin, 
+      adminLogout, 
+      handleAdminAuthError,
+      isAdminAuthenticated 
+    }}>
       {children}
     </AdminAuthContext.Provider>
   );

@@ -25,3 +25,8 @@ dist-ssr
 
 # Environment variables
 .env
+
+# Python specific ignores
+.venv/
+__pycache__/
+*.pyc

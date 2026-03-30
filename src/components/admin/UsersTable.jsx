@@ -6,7 +6,7 @@ import '../../styles/admin/UsersTable.css';
 const BACKEND_URL = 'http://localhost:5001';
 
 const UsersTable = () => {
-  const { adminToken } = useAdminAuth();
+  const { adminToken, handleAdminAuthError } = useAdminAuth();
   const [users, setUsers] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, page: 1, totalPages: 1, limit: 15 });
   const [search, setSearch] = useState('');
@@ -36,17 +36,23 @@ const UsersTable = () => {
       fetch(`${BACKEND_URL}/api/admin/users?${params}`, {
         headers: { Authorization: `Bearer ${adminToken}` },
       })
-        .then((r) => r.json())
+        .then((res) => {
+          if (handleAdminAuthError(res)) return;
+          return res.json();
+        })
         .then((data) => {
+          if (!data) return; // Already handled by handleAdminAuthError
           if (data.success) {
             setUsers(data.users);
             setPagination(data.pagination);
+          } else {
+            showToast(data.message || 'Failed to fetch users', 'error');
           }
         })
-        .catch(console.error)
+        .catch(() => showToast('Could not connect to server', 'error'))
         .finally(() => setLoading(false));
     },
-    [adminToken, debouncedSearch]
+    [adminToken, debouncedSearch, handleAdminAuthError]
   );
 
   useEffect(() => {
@@ -61,6 +67,7 @@ const UsersTable = () => {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${adminToken}` },
       });
+      if (handleAdminAuthError(res)) return;
       const data = await res.json();
       if (data.success) {
         showToast('User deleted');

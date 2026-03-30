@@ -140,7 +140,7 @@ app.use((err, req, res, _next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Verify database connection before starting server
 db.getConnection((err, connection) => {
