@@ -47,13 +47,13 @@ export const EMERGENCY_CONTACTS = [
   { name: "ChildRescueNepal", phone: " 977-1-5440737" },
 ];
 
-// Emotion label → color mapping (matches your CSS)
+// Emotion label → color mapping
 export const EMOTION_COLORS = {
-  "Depression": { bg: "#dbeafe", text: "#1e40af" },
-  "Anxiety": { bg: "#fef9c3", text: "#854d0e" },
-  "Suicidal": { bg: "#fee2e2", text: "#991b1b" },
-  "Stress": { bg: "#ffedd5", text: "#9a3412" },
-  "Bipolar": { bg: "#ede9fe", text: "#5b21b6" },
-  "Normal": { bg: "#dcfce7", text: "#166534" },
-  "Personality disorder": { bg: "#fce7f3", text: "#9d174d" },
+  "Depression": { bg: "#000000", text: "#ffffff" }, // Black
+  "Anxiety":    { bg: "#f97316", text: "#ffffff" }, // Orange
+  "Suicidal":   { bg: "#dc2626", text: "#ffffff" }, // Red
+  "Normal":     { bg: "#2563eb", text: "#ffffff" }, // Blue
+  "Stress":     { bg: "#9333ea", text: "#ffffff" }, // Purple
+  "Bipolar":    { bg: "#06b6d4", text: "#ffffff" }, // Cyan
+  "Personality disorder": { bg: "#ec4899", text: "#ffffff" }, // Pink
 };

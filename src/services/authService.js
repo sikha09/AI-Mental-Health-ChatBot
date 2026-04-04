@@ -209,3 +209,10 @@ export const isAuthenticated = () => {
 export const getAuthToken = () => {
   return getStorage(STORAGE_KEYS.AUTH_TOKEN);
 };
+
+/**
+ * Update current user data in storage
+ */
+export const updateCurrentUser = (userData) => {
+  setStorage(STORAGE_KEYS.USER_DATA, userData);
+};

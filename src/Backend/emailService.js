@@ -4,13 +4,13 @@ const nodemailer = require('nodemailer');
  * Create email transporter using Gmail SMTP
  */
 const createTransporter = () => {
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD
-        }
-    });
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD
+    }
+  });
 };
 
 /**
@@ -21,14 +21,14 @@ const createTransporter = () => {
  * @returns {Promise<boolean>} - Success status
  */
 const sendOTPEmail = async (email, otp, name = 'User') => {
-    try {
-        const transporter = createTransporter();
+  try {
+    const transporter = createTransporter();
 
-        const mailOptions = {
-            from: `"${process.env.EMAIL_FROM_NAME || 'AI Mental Health ChatBot'}" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: 'Verify Your Email - AI Mental Health ChatBot',
-            html: `
+    const mailOptions = {
+      from: `"${process.env.EMAIL_FROM_NAME || 'AI Mental Health ChatBot'}" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Verify Your Email - AI Mental Health ChatBot',
+      html: `
         <!DOCTYPE html>
         <html>
         <head>
@@ -133,7 +133,7 @@ const sendOTPEmail = async (email, otp, name = 'User') => {
         <body>
           <div class="container">
             <div class="header">
-              <h1>🤖 AI Mental Health ChatBot</h1>
+              <h1>AI Mental Health ChatBot</h1>
             </div>
             
             <div class="content">
@@ -151,11 +151,11 @@ const sendOTPEmail = async (email, otp, name = 'User') => {
               </div>
               
               <div class="expiry-notice">
-                <p>⏰ This code will expire in <strong>10 minutes</strong></p>
+                <p>This code will expire in <strong>10 minutes</strong></p>
               </div>
               
               <div class="security-notice">
-                🔒 <strong>Security Notice:</strong> Never share this code with anyone. Our team will never ask for your verification code.
+                <strong>Security Notice:</strong> Never share this code with anyone. Our team will never ask for your verification code.
               </div>
             </div>
             
@@ -167,7 +167,7 @@ const sendOTPEmail = async (email, otp, name = 'User') => {
         </body>
         </html>
       `,
-            text: `
+      text: `
 Hello ${name},
 
 Thank you for signing up for AI Mental Health ChatBot!
@@ -181,42 +181,42 @@ If you didn't request this code, please ignore this email.
 Best regards,
 AI Mental Health ChatBot Team
       `
-        };
+    };
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`✅ Email sent successfully to ${email}`);
-        console.log(`Message ID: ${info.messageId}`);
-        return true;
-    } catch (error) {
-        console.error('❌ Error sending email:', error);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent successfully to ${email}`);
+    console.log(`Message ID: ${info.messageId}`);
+    return true;
+  } catch (error) {
+    console.error('Error sending email:', error);
 
-        // Log specific error details
-        if (error.code === 'EAUTH') {
-            console.error('Authentication failed. Please check EMAIL_USER and EMAIL_PASSWORD in .env file');
-        } else if (error.code === 'ESOCKET') {
-            console.error('Network error. Please check your internet connection');
-        }
-
-        return false;
+    // Log specific error details
+    if (error.code === 'EAUTH') {
+      console.error('Authentication failed. Please check EMAIL_USER and EMAIL_PASSWORD in .env file');
+    } else if (error.code === 'ESOCKET') {
+      console.error('Network error. Please check your internet connection');
     }
+
+    return false;
+  }
 };
 
 /**
  * Verify email configuration
  */
 const verifyEmailConfig = async () => {
-    try {
-        const transporter = createTransporter();
-        await transporter.verify();
-        console.log('✅ Email service is ready to send emails');
-        return true;
-    } catch (error) {
-        console.error('❌ Email service configuration error:', error.message);
-        return false;
-    }
+  try {
+    const transporter = createTransporter();
+    await transporter.verify();
+    console.log('Email service is ready to send emails');
+    return true;
+  } catch (error) {
+    console.error('Email service configuration error:', error.message);
+    return false;
+  }
 };
 
 module.exports = {
-    sendOTPEmail,
-    verifyEmailConfig
+  sendOTPEmail,
+  verifyEmailConfig
 };

@@ -12,10 +12,14 @@ pip install bitsandbytes
 """
 
 import os
+
+# Increase HuggingFace HTTP timeout to 120 seconds (default is 10s, too short for slow connections)
+os.environ["HF_HUB_HTTP_TIMEOUT"] = "120"
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"  # Suppress the symlinks warning on Windows
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.trainer_utils import get_last_checkpoint
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from peft import LoraConfig, get_peft_model
 from datasets import load_dataset
 from trl import SFTTrainer, SFTConfig
 
@@ -52,29 +56,23 @@ print(f"[*] Dataset Columns found: {columns}")
 
 def format_instruction(row):
     """
-    Format the dataset row into the exact training template the model needs.
-    This ensures the model learns to respond underneath the '### Assistant:' token.
+    Format the dataset row into the training template.
+    We train on the FULL response so the model learns both the empathetic
+    opening AND the follow-up suggestions from the dataset organically.
+    The output structure (short empathy + suggestion) is enforced at inference time.
     """
-    # Fallback heuristic mapping (update 'prompt' and 'response' if the dataset uses different names!)
-    user_key = 'prompt' if 'prompt' in row else 'instruction' if 'instruction' in row else columns[0]
-    bot_key = 'response' if 'response' in row else 'completion' if 'completion' in row else columns[1]
+    user_text = row['input']
+    bot_text  = row['output']
     
-    user_text = row[user_key]
-    bot_text = row[bot_key]
-    
-    # Do not append 'Always recommend professional help' in the strict dataset training because
-    # the dataset itself already naturally encodes the professional help logic inside its transcripts.
-    prompt = f"### System:\nYou are a compassionate mental health support chatbot.\n\n"
+    prompt  = f"### System:\nYou are a compassionate mental health support chatbot.\n\n"
     prompt += f"### Human:\n{user_text}\n\n### Assistant:\n{bot_text}"
-    
-    # We return the formatted text. The SFTTrainer will automatically handle tokenization.
     return prompt
 
 # Optional Data Filtering: Filter out super short answers (e.g., less than 5 words) that don't add value
 print("[*] Filtering low-quality conversational rows...")
 def filter_short_responses(row):
-    bot_key = 'response' if 'response' in row else 'completion' if 'completion' in row else columns[1]
-    return len(str(row[bot_key]).split()) > 5
+    # Use 'output' specifically as it contains the chatbot's response in this dataset
+    return len(str(row['output']).split()) > 5
 
 dataset = dataset.filter(filter_short_responses)
 
@@ -91,31 +89,18 @@ tokenizer.pad_token = tokenizer.eos_token # DialoGPT doesn't have a pad token, s
 tokenizer.padding_side = "left"
 
 print("[*] Loading Base Model...")
-# Use 4-bit Quantization if on CUDA (Nvidia GPUs only) to save massive VRAM
-quantization_config = None
-if DEVICE == "cuda":
-    quantization_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_compute_dtype=torch.float16,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,
-    )
-
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_ID,
-    quantization_config=quantization_config,
+    torch_dtype=torch.float16 if DEVICE == "cuda" else torch.float32,
     device_map="auto" if DEVICE == "cuda" else DEVICE,
 )
-
-if DEVICE == "cuda":
-    model = prepare_model_for_kbit_training(model)
 
 # 4. LoRA Configuration (PEFT)
 print("[*] Applying LoRA Adapters...")
 peft_config = LoraConfig(
-    r=16, # Rank of the adapter
-    lora_alpha=32, # Scalar multiplier
-    lora_dropout=0.05,
+    r=16,            # Rank of the adapter
+    lora_alpha=32,   # Scalar multiplier (keep alpha=2*r for stable learning)
+    lora_dropout=0.1, # Increased from 0.05 → 0.1 to regularize and prevent overfitting
     target_modules=["c_attn"], # Target modules specifically for GPT2/DialoGPT architecture
     bias="none",
     task_type="CAUSAL_LM",
@@ -128,31 +113,34 @@ model.print_trainable_parameters()
 print("[*] Configuring SFTTrainer Workflow...")
 training_args = SFTConfig(
     output_dir=OUTPUT_DIR,
-    per_device_train_batch_size=4, # Increase if VRAM permits
+    per_device_train_batch_size=4,
     per_device_eval_batch_size=4,
-    gradient_accumulation_steps=4, # Simulates batch_size=16 (4x4)
+    gradient_accumulation_steps=4,   # Simulates effective batch_size=16 (4x4)
     optim="adamw_torch",
+    weight_decay=0.01,               # L2 regularization — penalizes large weights to prevent overfitting
     logging_steps=50,
-    eval_strategy="steps", # Evaluate every 'eval_steps'
+    eval_strategy="steps",
     eval_steps=100,
     save_strategy="steps",
     save_steps=100,
-    learning_rate=2e-4, # Peak learning rate for LoRA
-    max_grad_norm=0.3, # Prevents exploding gradients
-    num_train_epochs=3, # Total passes over the dataset
-    warmup_ratio=0.03,
-    fp16=True if DEVICE == "cuda" else False, # Mixed precision on Nvidia
+    learning_rate=1e-4,              # Reduced from 2e-4 → 1e-4. Lower LR = slower, more careful learning
+    max_grad_norm=0.3,               # Clips gradients to prevent exploding
+    num_train_epochs=3,              # Increased to 3 epochs as requested by user
+    warmup_ratio=0.05,               # Slightly increased warmup to ease into training more gently
+    fp16=True if DEVICE == "cuda" else False,
+    bf16=False,
     group_by_length=True,
-    load_best_model_at_end=True, # Early Stopping Mechanism
+    load_best_model_at_end=True,     # Automatically restores the checkpoint with the lowest eval_loss
+    metric_for_best_model="eval_loss", # Evaluate by val loss, not train loss
+    greater_is_better=False,         # Lower eval_loss = better model
     dataset_text_field="text",
     max_length=512,
 )
 
 trainer = SFTTrainer(
-    model=model,
+    model=model,  # Already a PeftModel from get_peft_model() above — do NOT pass peft_config again
     train_dataset=dataset["train"],
     eval_dataset=dataset["test"],
-    peft_config=peft_config,
     processing_class=tokenizer,
     args=training_args,
 )
@@ -160,7 +148,7 @@ trainer = SFTTrainer(
 # 6. Execution
 if __name__ == "__main__":
     print("\n" + "="*50)
-    print("🚀 Pipeline Setup Complete!")
+    print("[*] Pipeline Setup Complete!")
     print(f"Data mapping: Human -> Assistant")
     print("="*50 + "\n")
     

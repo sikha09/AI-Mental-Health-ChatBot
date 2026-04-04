@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { EMOTION_COLORS } from '../../config/constants';
 import './ChatArea.css';
 
-const ChatArea = ({ messages = [], onSendMessage }) => {
+const ChatArea = ({ messages = [], onSendMessage, isLoadingHistory }) => {
     const [input, setInput] = useState('');
     const messagesEndRef = useRef(null);
 
@@ -21,6 +22,12 @@ const ChatArea = ({ messages = [], onSendMessage }) => {
         setInput('');
     };
 
+    const getEmotionStyle = (label) => {
+        const colors = EMOTION_COLORS[label];
+        if (!colors) return {};
+        return { backgroundColor: colors.bg, color: colors.text };
+    };
+
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -30,7 +37,11 @@ const ChatArea = ({ messages = [], onSendMessage }) => {
 
     return (
         <div className="chat-area">
-            {messages.length === 0 ? (
+            {isLoadingHistory ? (
+                <div className="welcome-screen">
+                    <p>Fetching your previous conversations...</p>
+                </div>
+            ) : messages.length === 0 ? (
                 <div className="welcome-screen">
                     <h1>Welcome to Your AI Companion</h1>
                     <p>I'm here to help you navigate your thoughts and feelings.</p>
@@ -59,6 +70,13 @@ const ChatArea = ({ messages = [], onSendMessage }) => {
                             <div className="message-content">
                                 <div className="sender-name">{message.sender}</div>
                                 <div className="message-text">{message.text}</div>
+                                {message.emotion && (
+                                    <div className="message-mood">
+                                        <span style={getEmotionStyle(message.emotion)}>
+                                            {message.emotion}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -80,7 +98,7 @@ const ChatArea = ({ messages = [], onSendMessage }) => {
                     </button>
                 </form>
                 <p className="disclaimer">
-                    AI can make mistakes. Please use with discretion.
+                    AI can make mistakes. Please use with cautiously.
                 </p>
             </div>
         </div>

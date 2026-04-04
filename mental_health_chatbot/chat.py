@@ -6,12 +6,103 @@ import torch.nn as nn
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 from peft import PeftModel
 
+# Sentence starts that indicate the model is hallucinating as the PATIENT — reject these
+PATIENT_VOICE_STARTS = [
+    "i've been", "i have been", "i feel", "i don't", "i do not",
+    "i can't", "i cannot", "i'm struggling", "i am struggling",
+    "i'm feeling", "i am feeling", "i tried", "i've tried",
+    "i want to", "i'm not", "i am not", "my "
+]
+
+# Sentence starts that signal an actionable suggestion FROM the therapist
+SUGGESTION_STARTERS = [
+    "try ", "consider ", "you might ", "one thing ", "it may help",
+    "it might help", "it can help", "one way ", "i encourage you",
+    "i suggest", "i recommend", "you could ", "start by ",
+    "practice ", "reach out", "talk to ", "seek ", "engage in",
+    "focus on", "remind yourself", "take a ", "allow yourself",
+    "a good way", "one approach", "breathing ", "write down"
+]
+
+def is_patient_voice(sentence):
+    """Returns True if the model is speaking as the patient (hallucination)."""
+    lower = sentence.lower().strip()
+    return any(lower.startswith(p) for p in PATIENT_VOICE_STARTS)
+
+def is_suggestion(sentence):
+    """Returns True if the sentence starts with an actionable therapist suggestion."""
+    lower = sentence.lower().strip()
+    
+    # ── Rule-Killer ─────────────────────
+    # If the sentence contains system prompt keywords, it's NOT a suggestion, it's leakage.
+    leakage_keywords = ["rule:", "system:", "human:", "assistant:", "example:", "don't assume"]
+    if any(kw in lower for kw in leakage_keywords):
+        return False
+        
+    return any(lower.startswith(kw) for kw in SUGGESTION_STARTERS)
+
+def extract_empathy_and_suggestion(text, empathy_sentences=2):
+    """
+    Splits the model's raw output into:
+      - Empathetic opening (first N therapist-voice sentences)
+      - Suggestion (first sentence starting with an actionable keyword)
+    Patient-voice hallucinations are filtered out before extraction.
+    Ensures that fragmented or partial words at the end are stripped.
+    """
+    # ── Robust Sentence Splitting ────────
+    raw_sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    sentences = [s.strip() for s in raw_sentences if s.strip()]
+
+    # Filter out anything that sounds like patient-voice OR system leakage
+    leakage_keywords = ["rule:", "system:", "human:", "assistant:", "example:", "don't assume"]
+    
+    therapist_sentences = [
+        s for s in sentences 
+        if not is_patient_voice(s) and not any(kw in s.lower() for kw in leakage_keywords)
+    ]
+
+    # Fallback if everything got filtered
+    if not therapist_sentences:
+        if not sentences: return text, None
+        therapist_sentences = [sentences[0]]
+
+    # ── Empathy Block ───────────────────
+    empathy_part = ' '.join(therapist_sentences[:empathy_sentences])
+
+    # ── Suggestion Block ────────────────
+    remaining = therapist_sentences[empathy_sentences:]
+    suggestion_part = None
+    for sentence in remaining:
+        if is_suggestion(sentence):
+            suggestion_part = sentence
+            break
+
+    # Next best therapist sentence if no keyword match
+    if not suggestion_part and remaining:
+        suggestion_part = remaining[0]
+
+    # ── Final Cleanup ───────────────────
+    # Brutally strip any fragmented or non-punctuated word at the very end
+    def clean_sentence(s):
+        if not s: return s
+        # If the sentence doesn't end with punctuation, it's a fragment; find last punctuation.
+        if not re.search(r'[.!?]$', s):
+            last_punct = max(s.rfind('.'), s.rfind('!'), s.rfind('?'))
+            if last_punct != -1:
+                return s[:last_punct+1].strip()
+        return s.strip()
+
+    empathy_part = clean_sentence(empathy_part)
+    suggestion_part = clean_sentence(suggestion_part)
+
+    return empathy_part, suggestion_part
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
 
 # ── Paths ──────────────────────────────────────────────
 BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH  = os.path.join(BASE_DIR, "models", "mental_health_model_final")
+MODEL_PATH  = os.path.join(BASE_DIR, "models", "mental_health_model_v2")
 EMOTION_DIR = os.path.join(BASE_DIR, "models")
 
 # ── Load chatbot model ─────────────────────────────────
@@ -112,9 +203,20 @@ EMOTION_PROMPTS = {
 
 CRISIS_PHRASES = [
     "suicide", "kill myself", "end my life", "self-harm",
-    "hurt myself", "want to die", "no reason to live"
+    "hurt myself", "want to die", "no reason to live", "suicidal",
+    "want to kill", "take my life", "i'm done living", "can't go on",
+    "not worth living"
 ]
 
+CRISIS_RESPONSE = (
+    "I hear you, and I want you to know that what you're feeling matters deeply. "
+    "You are not alone in this.\n\n"
+    "\u26a0\ufe0f Please reach out for immediate support:\n"
+    "  \ud83d\udcde Nepal Crisis Helpline: 1166\n"
+    "  \ud83d\udcde iCall: 9152987821\n"
+    "  \ud83d\udcde Vandrevala Foundation: 1860-2662-345 (24/7)\n\n"
+    "You deserve help and care. Please talk to someone right now. \ud83d\udc99"
+)
 # ── Core functions ─────────────────────────────────────
 def predict_emotion(text):
     if not emotion_models_loaded:
@@ -147,10 +249,17 @@ def predict_emotion(text):
 
 def build_prompt(user_message, emotion, history):
     system_note = EMOTION_PROMPTS.get(emotion, EMOTION_PROMPTS["Normal"])
-    
-    # Only forcefully append the clinical warning if there is actual distress
     clinical_warning = "\nAlways recommend professional help for serious mental health concerns." if emotion != "Normal" else ""
-    context = f"### System:\nYou are a helpful and compassionate support chatbot. {system_note}{clinical_warning}\n\n"
+    
+    # Robust Few-Shot Examples to anchor the model's behavior.
+    context = (
+        f"### System: You are a warm and professional mental health support chatbot. "
+        f"{system_note}. {clinical_warning}\n\n"
+        f"### Human: I'm feeling really anxious.\n"
+        f"### Assistant: I'm so sorry to hear you're feeling this level of anxiety right now. It is completely normal for your heart to race when you're under pressure. Try simple deep breathing: inhale for 4 seconds, hold for 7, and exhale for 8.\n\n"
+        f"### Human: I feel like a failure.\n"
+        f"### Assistant: It sounds like you've been incredibly hard on yourself lately. One difficult period does not define your entire journey or your worth. Try writing down three small things you are proud of from this week.\n\n"
+    )
     
     for turn in history[-2:]:
         context += f"### Human:\n{turn['user']}\n\n### Assistant:\n{turn['bot']}\n\n"
@@ -161,6 +270,14 @@ def build_prompt(user_message, emotion, history):
 def chat_with_emotion(user_message, history=None):
     if history is None:
         history = []
+    
+    # ── Safety check: bypass model completely for crisis inputs ────────
+    if any(phrase in user_message.lower() for phrase in CRISIS_PHRASES):
+        response = CRISIS_RESPONSE
+        emotion = "Suicidal"
+        history.append({"user": user_message, "bot": response, "emotion": emotion})
+        return response, emotion, history
+
     emotion = predict_emotion(user_message)
     prompt  = build_prompt(user_message, emotion, history)
 
@@ -172,13 +289,13 @@ def chat_with_emotion(user_message, history=None):
     with torch.no_grad():
         output_ids = model.generate(
             **inputs,
-            max_new_tokens=100,
-            temperature=0.85,
-            top_p=0.95,
+            max_new_tokens=250,   # Increased slightly to give enough room for suggestion extraction
+            temperature=0.5,      # Lowered for more literal responses
+            top_p=0.9,
             do_sample=True,
             pad_token_id=tokenizer.eos_token_id,
             eos_token_id=tokenizer.eos_token_id,
-            repetition_penalty=1.25,
+            repetition_penalty=1.3, # Increased to prevent repetitive patterns/hallucinations
             no_repeat_ngram_size=3
         )
 
@@ -186,24 +303,24 @@ def chat_with_emotion(user_message, history=None):
     new_tokens = output_ids[0][input_len:]
     response = tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
 
-    # If the model still generated a user preface, split and take the Assistant part
-    import re
-    # Match various forms of the assistant tag and take the content AFTER the LAST one
+    # ── Response cleanup ───────────────────────────────────────────────────
+    # 1. Strip any leaked prompt tokens
     chunks = re.split(r'###\s*Assistant:?|Assistant:?|Chatbot:', response, flags=re.IGNORECASE)
     if len(chunks) > 1:
         response = chunks[-1].strip()
-        
-    # Clean up any leftover prefixes at the very start
-    response = re.sub(r'^(User|User:|Bot|Bot:|Chatbot|Chatbot:|Assistant|Assistant:)\s*', '', response, flags=re.IGNORECASE).strip()
-    
-    # Remove "it's essential to recognize" loops if they somehow persist (aggressive backup)
-    response = re.sub(r'(it\'s essential to recognize.*?){2,}', r'\1', response, flags=re.IGNORECASE)
+    chunks = re.split(r'###\s*', response)
+    response = chunks[0].strip()
 
-    # Trim incomplete sentence at the end if the model maxes out its tokens
-    if not response.endswith(('.', '!', '?')):
-        last_punctuation = max(response.rfind('.'), response.rfind('!'), response.rfind('?'))
-        if last_punctuation != -1:
-            response = response[:last_punctuation+1]
+    # 2. Clean up any leftover role prefixes
+    response = re.sub(r'^(User|User:|Bot|Bot:|Chatbot|Chatbot:|Assistant|Assistant:)\s*', '', response, flags=re.IGNORECASE).strip()
+
+    # ── Extract structured empathy + suggestion from model's own output ──────
+    # This gives us a clean 2-sentence empathy block followed by 1 dataset-learned suggestion.
+    empathy, suggestion = extract_empathy_and_suggestion(response, empathy_sentences=2)
+    if suggestion:
+        response = f"{empathy}\n\n💡 {suggestion}"
+    else:
+        response = empathy
 
     is_crisis = (
         emotion == "Suicidal" or

@@ -4,6 +4,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { signUp, signInWithGoogle } from '../services/authService';
 import VerifyEmail from '../components/VerifyEmail';
+import { setStorage } from '../utils/storage';
+import { STORAGE_KEYS } from '../config/constants';
 import "../styles/SignUp.css";
 import '../styles/App.css';
 
@@ -104,8 +106,8 @@ const SignUp = () => {
 
   const handleVerificationSuccess = (response) => {
     if (response.token) {
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      setStorage(STORAGE_KEYS.AUTH_TOKEN, response.token);
+      setStorage(STORAGE_KEYS.USER_DATA, response.user);
     }
     navigate('/chat');
   };
@@ -154,7 +156,7 @@ const SignUp = () => {
       <div className="signup-popup-overlay">
         <div className="signup-popup" onClick={(e) => e.stopPropagation()} style={{ position: 'relative' }}>
 
-          {/* ❌ Close Button */}
+          {/* Close Button */}
           <button
             onClick={() => navigate('/')}
             style={{

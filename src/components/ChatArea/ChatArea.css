@@ -152,6 +152,21 @@
     word-wrap: break-word;
 }
 
+.message-mood {
+    margin-top: 0.6rem;
+    display: flex;
+    align-items: center;
+}
+
+.message-mood span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.01em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 /* ── Input Container ─────────────────────────────────────────── */
 .input-container {
     position: absolute;

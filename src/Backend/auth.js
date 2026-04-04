@@ -512,6 +512,55 @@ const updateCheckinSettings = (req, res) => {
 };
 
 /**
+ * Update user profile (Name ONLY, Email is locked)
+ */
+const updateProfile = (req, res) => {
+  const userId = req.user.id;
+  const { name } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ success: false, message: 'Name is required' });
+  }
+
+  const query = 'UPDATE users SET name = ? WHERE id = ?';
+  db.query(query, [name, userId], (err) => {
+    if (err) {
+      console.error('Update profile error:', err);
+      return res.status(500).json({ success: false, message: 'Server error' });
+    }
+    res.json({ success: true, message: 'Profile updated successfully' });
+  });
+};
+
+/**
+ * Update user password
+ */
+const updatePassword = async (req, res) => {
+  const userId = req.user.id;
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ success: false, message: 'All fields are required' });
+  }
+
+  // 1. Verify current password
+  db.query('SELECT password FROM users WHERE id = ?', [userId], async (err, results) => {
+    if (err || results.length === 0) return res.status(500).json({ success: false, message: 'Server error' });
+
+    const user = results[0];
+    const isValid = await comparePassword(currentPassword, user.password);
+    if (!isValid) return res.status(401).json({ success: false, message: 'Incorrect current password' });
+
+    // 2. Hash and update
+    const hashed = await hashPassword(newPassword);
+    db.query('UPDATE users SET password = ? WHERE id = ?', [hashed, userId], (err) => {
+      if (err) return res.status(500).json({ success: false, message: 'Update failed' });
+      res.json({ success: true, message: 'Password updated successfully' });
+    });
+  });
+};
+
+/**
  * Middleware to verify JWT token
  */
 const verifyToken = (req, res, next) => {
@@ -546,5 +595,7 @@ module.exports = {
   comparePassword,
   verifyEmail,
   resendVerification,
-  updateCheckinSettings
+  updateCheckinSettings,
+  updateProfile,
+  updatePassword
 };

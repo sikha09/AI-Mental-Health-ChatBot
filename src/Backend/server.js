@@ -4,8 +4,10 @@ const session = require("express-session");
 require('dotenv').config();
 const passport = require("./passport-config");
 const db = require("./db");
-const { signup, login, getProfile, verifyToken, generateToken, verifyEmail, resendVerification, updateCheckinSettings } = require("./auth");
+const { signup, login, getProfile, verifyToken, generateToken, verifyEmail, resendVerification, updateCheckinSettings, updateProfile, updatePassword } = require("./auth");
 const { verifyAdmin, adminLogin, getAdminStats, getAllUsers, getUserById, banUser, unbanUser, deleteUser } = require("./admin");
+const { getJournals, createJournal, updateJournal, deleteJournal } = require("./journal");
+const { sendMessage, getChatHistory, getMoodAnalytics } = require("./chat");
 
 const app = express();
 
@@ -65,6 +67,9 @@ app.post("/api/auth/resend-verification", resendVerification);
 
 // Get user profile (protected route)
 app.get("/api/auth/profile", verifyToken, getProfile);
+
+// Update user profile (Name ONLY, Email is locked)
+app.put("/api/auth/profile", verifyToken, updateProfile);
 
 // Update user check-in settings
 app.put("/api/auth/profile/checkin", verifyToken, updateCheckinSettings);
@@ -131,6 +136,21 @@ app.put("/api/admin/users/:id/ban", verifyAdmin, banUser);
 app.put("/api/admin/users/:id/unban", verifyAdmin, unbanUser);
 app.delete("/api/admin/users/:id", verifyAdmin, deleteUser);
 
+// ============================================
+// Journal Routes
+// ============================================
+app.get("/api/journals", verifyToken, getJournals);
+app.post("/api/journals", verifyToken, createJournal);
+app.put("/api/journals/:id", verifyToken, updateJournal);
+app.delete("/api/journals/:id", verifyToken, deleteJournal);
+
+// ============================================
+// AI Chat & Analytics Routes
+// ============================================
+app.post("/api/chat/message", verifyToken, sendMessage);
+app.get("/api/chat/history", verifyToken, getChatHistory);
+app.get("/api/chat/mood-analytics", verifyToken, getMoodAnalytics);
+
 // Error handling middleware
 app.use((err, req, res, _next) => {
   console.error('Server error:', err);
@@ -175,6 +195,15 @@ db.getConnection((err, connection) => {
     console.log(`  PUT  /api/admin/users/:id/ban - Ban user`);
     console.log(`  PUT  /api/admin/users/:id/unban - Unban user`);
     console.log(`  DELETE /api/admin/users/:id - Delete user`);
+    console.log(`--- Journal ---`);
+    console.log(`  GET    /api/journals - Get all entries`);
+    console.log(`  POST   /api/journals - Create new entry`);
+    console.log(`  PUT    /api/journals/:id - Update entry`);
+    console.log(`  DELETE /api/journals/:id - Delete entry`);
+    console.log(`--- AI Chat ---`);
+    console.log(`  POST   /api/chat/message - Send message & save`);
+    console.log(`  GET    /api/chat/history - Get conversation history`);
+    console.log(`  GET    /api/chat/mood-analytics - Get emotions trend`);
     console.log('\n');
   });
 });
